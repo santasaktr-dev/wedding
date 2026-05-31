@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+:root {
+  --oxford-navy: #0a1f44;
+  --tweed-brown: #7c5c3b;
+  --deep-olive: #3e4d3a;
+  --camel-beige: #d6c8a5;
+  --ash-grey: #bdbfba;
+  --warm-white: #fbf8f0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--warm-white);
+  color: var(--oxford-navy);
+  font-family: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+}
+
+::selection {
+  background: rgba(214, 200, 165, 0.45);
+}
+
+.script-display {
+  font-family: var(--font-great-vibes), var(--font-cinzel), Georgia, "Times New Roman", serif;
+}
+
+.luxury-heading {
+  font-family: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.luxury-text {
+  font-family: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.lang-th {
+  font-family: var(--font-prompt), ui-sans-serif, system-ui, sans-serif;
+}
+
+.lang-th .luxury-heading {
+  font-family: var(--font-prompt), ui-sans-serif, system-ui, sans-serif;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.subtle-paper {
+  background-image:
+    radial-gradient(circle at top left, rgba(199, 162, 124, 0.22), transparent 34rem),
+    linear-gradient(135deg, rgba(10, 31, 68, 0.035) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(10, 31, 68, 0.035) 25%, transparent 25%);
+  background-size: auto, 18px 18px, 18px 18px;
+}
