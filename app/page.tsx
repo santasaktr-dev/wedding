@@ -205,6 +205,7 @@ const copy = {
     contactTitle: "Smart",
     contactIntro:
       "For questions about the wedding, location, RSVP, or schedule, please contact Smart via LINE Official or phone.",
+    contactLineLabel: "Add LINE Official: @990yroaq",
     bottomNav: [
       { label: "Map", href: "#location", icon: MapPin },
       { label: "Time", href: "#schedule", icon: Clock },
@@ -379,6 +380,7 @@ const copy = {
     contactEyebrow: "ติดต่อ",
     contactTitle: "Smart",
     contactIntro: "หากมีคำถามเกี่ยวกับงาน สถานที่ RSVP หรือกำหนดการ สามารถติดต่อ Smart ผ่าน LINE Official หรือโทรศัพท์",
+    contactLineLabel: "เพิ่มเพื่อน LINE Official: @990yroaq",
     bottomNav: [
       { label: "แผนที่", href: "#location", icon: MapPin },
       { label: "เวลา", href: "#schedule", icon: Clock },
@@ -811,13 +813,14 @@ export default function Home() {
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <a
+              aria-label="Add LINE Official @990yroaq as a friend"
               className="inline-flex min-h-14 items-center justify-center gap-3 rounded border border-white/18 bg-white/8 px-5 font-semibold transition hover:bg-white/14"
-              href="https://line.me/R/ti/p/@990yroaq"
+              href="https://line.me/R/ti/p/%40990yroaq"
               rel="noreferrer"
               target="_blank"
             >
               <MessageCircle aria-hidden="true" size={20} />
-              LINE Official: @990yroaq
+              {t.contactLineLabel}
             </a>
             <a
               className="inline-flex min-h-14 items-center justify-center gap-3 rounded border border-white/18 bg-white/8 px-5 font-semibold transition hover:bg-white/14"
