@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { saveGalleryImageOrder, uploadGalleryImagesFromForm } from "../../../lib/cms/actions";
 import { moveItem, normalizeSortOrder } from "../../../lib/cms/reorder";
 import type { GalleryAlbum } from "../../../lib/cms/types";
 import { getLocalizedText } from "../../../lib/cms/validation";
@@ -28,6 +29,10 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
     const reordered = normalizeSortOrder(moveItem(selectedAlbum.images, fromIndex, toIndex));
     setAlbums((current) =>
       current.map((album) => (album.id === selectedAlbum.id ? { ...album, images: reordered } : album)),
+    );
+    void saveGalleryImageOrder(
+      selectedAlbum.id,
+      reordered.map((image) => image.id),
     );
   };
 
@@ -84,9 +89,30 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
 
             <div className="mb-5">
               <StatusBanner tone="info">
-                Upload and publish actions are connected in the next task. Reordering here is local preview behavior.
+                Uploaded images are saved as draft. Use Settings to publish when the album is ready.
               </StatusBanner>
             </div>
+
+            <form action={uploadGalleryImagesFromForm} className="mb-5 border border-dashed border-[#d6c8a5] bg-white p-4">
+              <input name="albumId" type="hidden" value={selectedAlbum.id} />
+              <input name="albumSlug" type="hidden" value={selectedAlbum.slug} />
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-[#0a1f44]">Upload photos</span>
+                <input
+                  accept="image/*"
+                  className="block w-full text-sm text-[#3e4d3a] file:mr-4 file:border-0 file:bg-[#0a1f44] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#fbf8f0]"
+                  multiple
+                  name="images"
+                  type="file"
+                />
+              </label>
+              <button
+                className="mt-3 min-h-10 bg-[#0a1f44] px-4 text-sm font-semibold text-[#fbf8f0] transition hover:bg-[#142f5f]"
+                type="submit"
+              >
+                Upload selected photos
+              </button>
+            </form>
 
             <ImageGrid images={selectedAlbum.images} onMove={moveImage} />
           </>

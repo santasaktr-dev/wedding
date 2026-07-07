@@ -6,6 +6,7 @@ import { getSupabaseConfig } from "../supabase/config";
 import { createSupabaseServerClient } from "../supabase/server";
 import { fallbackCmsSnapshot } from "./fallback";
 import { loadCmsSnapshotFromRows } from "./server";
+import { buildGalleryStoragePath } from "./storage";
 import type { WeddingContent } from "./types";
 
 type SupabaseClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
@@ -14,6 +15,10 @@ type ContentSectionUpsertRow = {
   section_key: string;
   language: "en" | "th";
   content: WeddingContent[keyof WeddingContent];
+};
+type CmsActionResult = {
+  ok: boolean;
+  message?: string;
 };
 
 let fallbackDraftContent: WeddingContent = structuredClone(fallbackCmsSnapshot.content) as WeddingContent;
@@ -90,7 +95,7 @@ export async function getDraftContentForAdmin(): Promise<WeddingContent> {
   }).content;
 }
 
-export async function saveDraftContent(content: WeddingContent): Promise<{ ok: boolean }> {
+export async function saveDraftContent(content: WeddingContent): Promise<CmsActionResult> {
   if (!getSupabaseConfig().isConfigured) {
     fallbackDraftContent = cloneContent(content);
     revalidatePath("/admin/content");
@@ -117,4 +122,100 @@ export async function saveDraftContent(content: WeddingContent): Promise<{ ok: b
   } catch {
     return { ok: false };
   }
+}
+
+export async function uploadGalleryImages(formData: FormData): Promise<CmsActionResult> {
+  if (!getSupabaseConfig().isConfigured) {
+    return { ok: false, message: "Supabase is not configured." };
+  }
+
+  const albumId = String(formData.get("albumId") ?? "");
+  const albumSlug = String(formData.get("albumSlug") ?? "album");
+  const files = formData.getAll("images").filter((item): item is File => item instanceof File && item.size > 0);
+
+  if (!albumId || files.length === 0) {
+    return { ok: false, message: "Select an album and at least one image." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const uploadedRows = [];
+
+  for (const [index, file] of files.entries()) {
+    if (!file.type.startsWith("image/")) {
+      return { ok: false, message: `${file.name} is not an image.` };
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      return { ok: false, message: `${file.name} is larger than 10MB.` };
+    }
+
+    const storagePath = buildGalleryStoragePath({
+      albumSlug,
+      fileName: file.name,
+      now: Date.now() + index,
+    });
+    const uploadResult = await supabase.storage.from("wedding-gallery").upload(storagePath, file);
+
+    if (uploadResult.error) {
+      return { ok: false, message: uploadResult.error.message };
+    }
+
+    const { data } = supabase.storage.from("wedding-gallery").getPublicUrl(storagePath);
+    uploadedRows.push({
+      album_id: albumId,
+      storage_path: storagePath,
+      public_url: data.publicUrl,
+      sort_order: Date.now() + index,
+      caption_en: "",
+      caption_th: "",
+      alt_en: "",
+      alt_th: "",
+      is_cover: false,
+      status: "draft",
+    });
+  }
+
+  const insertResult = await supabase.from("gallery_images").insert(uploadedRows);
+
+  if (insertResult.error) {
+    return { ok: false, message: insertResult.error.message };
+  }
+
+  revalidatePath("/admin/gallery");
+  revalidatePath("/gallery");
+
+  return { ok: true };
+}
+
+export async function uploadGalleryImagesFromForm(formData: FormData): Promise<void> {
+  await uploadGalleryImages(formData);
+}
+
+export async function saveGalleryImageOrder(albumId: string, orderedImageIds: string[]): Promise<CmsActionResult> {
+  if (!getSupabaseConfig().isConfigured) {
+    return { ok: true };
+  }
+
+  if (!albumId || orderedImageIds.length === 0) {
+    return { ok: false, message: "Select an album and at least one image." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  for (const [index, id] of orderedImageIds.entries()) {
+    const updateResult = await supabase
+      .from("gallery_images")
+      .update({ sort_order: index })
+      .eq("id", id)
+      .eq("album_id", albumId);
+
+    if (updateResult.error) {
+      return { ok: false, message: updateResult.error.message };
+    }
+  }
+
+  revalidatePath("/admin/gallery");
+  revalidatePath("/gallery");
+
+  return { ok: true };
 }
