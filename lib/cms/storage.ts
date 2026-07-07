@@ -4,6 +4,8 @@ type GalleryStoragePathInput = {
   now?: number;
 };
 
+const allowedImageExtensions = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
+
 function slugifyValue(value: string, fallback: string): string {
   return (
     value
@@ -17,7 +19,9 @@ function slugifyValue(value: string, fallback: string): string {
 export function slugifyFileName(fileName: string): string {
   const lower = fileName.trim().toLowerCase();
   const extensionMatch = lower.match(/\.([a-z0-9]+)$/);
-  const extension = extensionMatch?.[1] ?? "jpg";
+  const candidateExtension = extensionMatch?.[1];
+  const extension =
+    candidateExtension && allowedImageExtensions.has(candidateExtension) ? candidateExtension : "jpg";
   const baseName = extensionMatch ? lower.slice(0, -extensionMatch[0].length) : lower;
   const slug = slugifyValue(baseName, "image").slice(0, 80);
 

@@ -15,6 +15,11 @@ describe("slugifyFileName", () => {
     expect(slugifyFileName("Photo.!!!")).toBe("photo.jpg");
   });
 
+  it("rejects non-image extensions and defaults to jpg", () => {
+    expect(slugifyFileName("photo.php")).toBe("photo.jpg");
+    expect(slugifyFileName("photo.exe")).toBe("photo.jpg");
+  });
+
   it("defaults empty or unsafe base names to image", () => {
     expect(slugifyFileName("   .PNG")).toBe("image.png");
     expect(slugifyFileName("&&&")).toBe("image.jpg");
