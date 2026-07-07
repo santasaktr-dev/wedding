@@ -197,3 +197,15 @@ export async function getPublishedCmsSnapshot(): Promise<CmsSnapshot> {
     images: (images ?? []) as GalleryImageRow[],
   });
 }
+
+export async function getPublicWeddingContent(): Promise<WeddingContent> {
+  const snapshot = await getPublishedCmsSnapshot();
+
+  return snapshot.content;
+}
+
+export async function getPublicGalleryAlbums(): Promise<GalleryAlbum[]> {
+  const snapshot = await getPublishedCmsSnapshot();
+
+  return snapshot.albums;
+}
