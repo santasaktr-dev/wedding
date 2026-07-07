@@ -1,15 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { redirect, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { signOutAdmin } from "../actions";
 
 type AdminShellProps = {
   children: ReactNode;
-  isAuthenticated: boolean;
-  isSupabaseConfigured: boolean;
 };
 
 const navItems = [
@@ -18,17 +16,8 @@ const navItems = [
   { href: "/admin/settings", label: "Settings" },
 ];
 
-export function AdminShell({ children, isAuthenticated, isSupabaseConfigured }: AdminShellProps) {
+export function AdminShell({ children }: AdminShellProps) {
   const pathname = usePathname();
-  const isLoginRoute = pathname === "/admin/login";
-
-  if (isLoginRoute) {
-    return <>{children}</>;
-  }
-
-  if (isSupabaseConfigured && !isAuthenticated) {
-    redirect("/admin/login");
-  }
 
   return (
     <div className="min-h-screen bg-[#fbf8f0] text-[#0a1f44]">
