@@ -11,6 +11,10 @@ describe("slugifyFileName", () => {
     expect(slugifyFileName("Jajah & Smart 01")).toBe("jajah-smart-01.jpg");
   });
 
+  it("rejects unsafe extensions and defaults to jpg", () => {
+    expect(slugifyFileName("Photo.!!!")).toBe("photo.jpg");
+  });
+
   it("defaults empty or unsafe base names to image", () => {
     expect(slugifyFileName("   .PNG")).toBe("image.png");
     expect(slugifyFileName("&&&")).toBe("image.jpg");
