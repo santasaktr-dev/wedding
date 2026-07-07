@@ -553,7 +553,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
           </SectionHeader>
           <div className="mx-auto max-w-3xl">
             {t.schedule.map((item, index) => (
-              <article className="relative grid grid-cols-[5rem_1fr] gap-5 pb-9" key={item.time}>
+              <article className="relative grid grid-cols-[5rem_1fr] gap-5 pb-9" key={`${item.time}-${item.title}`}>
                 {index !== t.schedule.length - 1 ? (
                   <div className="absolute bottom-0 left-[5.45rem] top-8 w-px bg-[#D6C8A5]/35" />
                 ) : null}
