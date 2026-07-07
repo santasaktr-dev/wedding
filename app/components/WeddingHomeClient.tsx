@@ -426,6 +426,9 @@ function SectionHeader({
 export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
   const [language, setLanguage] = useState<Language>("en");
   const t = copy[language];
+  const localized = (value: Record<Language, string>, fallback: string) => value[language] || fallback;
+  const hero = snapshot.content.hero;
+  const heroImageSrc = hero.imageSrc || "/images/wedding-hero.png";
   const previewImages = snapshot.albums[0]?.images.slice(0, 3) ?? [];
   const isThai = language === "th";
   const languageStyle = isThai
@@ -479,25 +482,25 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
         id="home"
       >
         <Image
-          alt="Elegant wedding venue with refined old money styling"
+          alt={localized(hero.imageAlt, "Elegant wedding venue with refined old money styling")}
           className="object-cover"
           fill
           priority
           sizes="100vw"
-          src="/images/wedding-hero.png"
+          src={heroImageSrc}
         />
         <div className="absolute inset-0 bg-[#0A1F44]/55" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A1F44] via-[#0A1F44]/35 to-transparent" />
         <div className="relative mx-auto w-full max-w-7xl">
           <div className="max-w-4xl">
             <p className="mb-8 text-xs font-semibold uppercase tracking-[0.34em] text-[#D6C8A5] sm:mb-10">
-              {t.heroDate}
+              {localized(hero.date, t.heroDate)}
             </p>
             <h1 className="script-display text-6xl font-medium leading-[0.92] tracking-normal sm:text-7xl md:text-8xl lg:text-9xl">
-              Jajah & Smart
+              {hero.coupleName || "Jajah & Smart"}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[#FBF8F0]/86 md:text-xl">
-              {t.heroText}
+              {localized(hero.text, t.heroText)}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
@@ -505,14 +508,14 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
                 href="#location"
               >
                 <MapPin aria-hidden="true" className="mr-2" size={18} />
-                {t.locationButton}
+                {localized(hero.locationButton, t.locationButton)}
               </a>
               <a
                 className="inline-flex min-h-12 items-center justify-center rounded border border-[#FBF8F0]/55 px-6 text-sm font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:border-[#D6C8A5] hover:text-[#D6C8A5]"
                 href="#dress-code"
               >
                 <Shirt aria-hidden="true" className="mr-2" size={18} />
-                {t.dressButton}
+                {localized(hero.dressButton, t.dressButton)}
               </a>
             </div>
           </div>

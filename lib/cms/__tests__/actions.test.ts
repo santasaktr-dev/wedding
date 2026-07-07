@@ -7,6 +7,7 @@ import {
   saveDraftContent,
   saveGalleryImageOrder,
   deleteGalleryImage,
+  uploadHeroImage,
   uploadGalleryImages,
   uploadGalleryImagesAction,
   publishDraftContentAction,
@@ -263,6 +264,39 @@ describe("cms draft actions", () => {
     ]);
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/admin/gallery");
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/gallery");
+  });
+
+  it("uploads a hero image and returns its public URL", async () => {
+    actionMocks.getSupabaseConfig.mockReturnValue({
+      url: "https://example.supabase.co",
+      anonKey: "anon-key",
+      isConfigured: true,
+    });
+
+    const upload = vi.fn().mockResolvedValue({ error: null });
+    const getPublicUrl = vi.fn((path: string) => ({
+      data: {
+        publicUrl: `https://cdn.example.com/${path}`,
+      },
+    }));
+    const storageFrom = vi.fn(() => ({ upload, getPublicUrl }));
+    actionMocks.createSupabaseServerClient.mockResolvedValue({
+      storage: {
+        from: storageFrom,
+      },
+    });
+
+    const formData = new FormData();
+    formData.set("image", new File(["image"], "Hero Venue.JPG", { type: "image/jpeg" }));
+
+    await expect(uploadHeroImage(formData)).resolves.toEqual({
+      ok: true,
+      publicUrl: expect.stringMatching(/^https:\/\/cdn\.example\.com\/hero\/\d+-hero-venue\.jpg$/),
+    });
+
+    expect(storageFrom).toHaveBeenCalledWith("wedding-gallery");
+    expect(upload).toHaveBeenCalledWith(expect.stringMatching(/^hero\/\d+-hero-venue\.jpg$/), expect.any(File));
+    expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/admin/content");
   });
 
   it("persists gallery image order when Supabase is configured", async () => {

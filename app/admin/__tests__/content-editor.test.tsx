@@ -7,10 +7,12 @@ import { SectionEditor } from "../components/SectionEditor";
 
 const editorMocks = vi.hoisted(() => ({
   saveDraftContent: vi.fn(),
+  uploadHeroImage: vi.fn(),
 }));
 
 vi.mock("../../../lib/cms/actions", () => ({
   saveDraftContent: editorMocks.saveDraftContent,
+  uploadHeroImage: editorMocks.uploadHeroImage,
 }));
 
 function renderEditor(content: WeddingContent = fallbackCmsSnapshot.content) {
@@ -18,6 +20,11 @@ function renderEditor(content: WeddingContent = fallbackCmsSnapshot.content) {
 }
 
 describe("SectionEditor", () => {
+  beforeEach(() => {
+    editorMocks.saveDraftContent.mockReset();
+    editorMocks.uploadHeroImage.mockReset();
+  });
+
   it("edits localized hero copy and saves the draft", async () => {
     editorMocks.saveDraftContent.mockResolvedValue({ ok: true });
     renderEditor();
@@ -63,5 +70,33 @@ describe("SectionEditor", () => {
         }),
       );
     });
+  });
+
+  it("uploads a hero image, updates the preview, and saves the draft", async () => {
+    editorMocks.uploadHeroImage.mockResolvedValue({
+      ok: true,
+      publicUrl: "https://cdn.example.com/hero/new-photo.jpg",
+    });
+    editorMocks.saveDraftContent.mockResolvedValue({ ok: true });
+    renderEditor();
+
+    fireEvent.change(screen.getByLabelText(/upload hero image/i), {
+      target: {
+        files: [new File(["image"], "new-photo.jpg", { type: "image/jpeg" })],
+      },
+    });
+
+    await waitFor(() => expect(editorMocks.uploadHeroImage).toHaveBeenCalledTimes(1));
+    await waitFor(() => {
+      expect(editorMocks.saveDraftContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          hero: expect.objectContaining({
+            imageSrc: "https://cdn.example.com/hero/new-photo.jpg",
+          }),
+        }),
+      );
+    });
+    expect(screen.getByAltText(/hero preview/i)).toHaveAttribute("src", "https://cdn.example.com/hero/new-photo.jpg");
+    expect(await screen.findByText(/hero image uploaded and saved/i)).toBeInTheDocument();
   });
 });

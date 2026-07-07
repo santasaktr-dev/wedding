@@ -1,8 +1,10 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useMemo, useState, useTransition } from "react";
 
-import { saveDraftContent } from "../../../lib/cms/actions";
+import { saveDraftContent, uploadHeroImage } from "../../../lib/cms/actions";
 import type { Language, LocalizedText, WeddingContent } from "../../../lib/cms/types";
 import { LanguageTabs } from "./LanguageTabs";
 import { StatusBanner } from "./StatusBanner";
@@ -63,6 +65,8 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
   const [language, setLanguage] = useState<Language>("en");
   const [activeSection, setActiveSection] = useState<EditableSection>("hero");
   const [status, setStatus] = useState<SaveStatus>("idle");
+  const [heroImageStatus, setHeroImageStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const [isUploadingHero, setIsUploadingHero] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const activeSectionItem = useMemo(
@@ -135,6 +139,57 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
     });
   };
 
+  const uploadHeroImageFile = async (files: FileList | null) => {
+    const file = files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setStatus("idle");
+    setHeroImageStatus(null);
+    setIsUploadingHero(true);
+
+    const formData = new FormData();
+    formData.set("image", file);
+
+    try {
+      const uploadResult = await uploadHeroImage(formData);
+
+      if (!uploadResult.ok || !uploadResult.publicUrl) {
+        setHeroImageStatus({ ok: false, message: uploadResult.message ?? "Unable to upload hero image." });
+        setStatus("error");
+        return;
+      }
+
+      const nextContent = {
+        ...content,
+        hero: {
+          ...content.hero,
+          imageSrc: uploadResult.publicUrl,
+        },
+      };
+
+      setContent(nextContent);
+
+      const saveResult = await saveDraftContent(nextContent);
+
+      if (!saveResult.ok) {
+        setHeroImageStatus({ ok: false, message: "Hero image uploaded, but draft was not saved." });
+        setStatus("error");
+        return;
+      }
+
+      setHeroImageStatus({ ok: true, message: "Hero image uploaded and saved." });
+      setStatus("saved");
+    } catch {
+      setHeroImageStatus({ ok: false, message: "Unable to upload hero image." });
+      setStatus("error");
+    } finally {
+      setIsUploadingHero(false);
+    }
+  };
+
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
       <aside className="border border-[#d6c8a5] bg-[#fffdf7] p-4">
@@ -200,6 +255,39 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
                 onChange={(value) => updateLocalized("hero", "text", value)}
                 value={textValue(content.hero.text, language)}
               />
+              <div className="grid gap-4 border border-[#d6c8a5] bg-white p-4 md:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+                <div className="overflow-hidden border border-[#d6c8a5] bg-[#0a1f44]">
+                  <img
+                    alt="Hero preview"
+                    className="aspect-[16/10] w-full object-cover"
+                    src={content.hero.imageSrc || "/images/wedding-hero.png"}
+                  />
+                </div>
+                <div className="grid content-start gap-3">
+                  <label className="block" htmlFor="hero-image-upload">
+                    <span className="text-sm font-semibold text-[#0a1f44]">Upload hero image</span>
+                    <input
+                      accept="image/*"
+                      className="mt-2 w-full border border-[#d6c8a5] bg-[#fffdf7] px-3 py-3 text-sm text-[#0a1f44] file:mr-3 file:border-0 file:bg-[#0a1f44] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#fbf8f0]"
+                      disabled={isUploadingHero}
+                      id="hero-image-upload"
+                      onChange={(event) => {
+                        uploadHeroImageFile(event.currentTarget.files);
+                        event.currentTarget.value = "";
+                      }}
+                      type="file"
+                    />
+                  </label>
+                  <p className="text-xs leading-5 text-[#3e4d3a]">
+                    {isUploadingHero
+                      ? "Uploading and saving..."
+                      : "Choose one image to replace the main Hero background. The draft is saved automatically."}
+                  </p>
+                  {heroImageStatus ? (
+                    <StatusBanner tone={heroImageStatus.ok ? "success" : "error"}>{heroImageStatus.message}</StatusBanner>
+                  ) : null}
+                </div>
+              </div>
               <TextField
                 id="hero-image-src"
                 label="Hero image path"

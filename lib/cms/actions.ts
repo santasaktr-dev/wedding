@@ -6,7 +6,7 @@ import { getSupabaseConfig } from "../supabase/config";
 import { createSupabaseServerClient } from "../supabase/server";
 import { fallbackCmsSnapshot } from "./fallback";
 import { loadCmsSnapshotFromRows } from "./server";
-import { buildGalleryStoragePath } from "./storage";
+import { buildGalleryStoragePath, buildHeroStoragePath } from "./storage";
 import type { WeddingContent } from "./types";
 
 type SupabaseClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
@@ -23,11 +23,16 @@ type CmsActionResult = {
 type UploadGalleryImagesResult = CmsActionResult & {
   uploadedCount?: number;
 };
+type UploadHeroImageResult = CmsActionResult & {
+  publicUrl?: string;
+};
 
 let fallbackDraftContent: WeddingContent = structuredClone(fallbackCmsSnapshot.content) as WeddingContent;
 
 const galleryImageMaxSizeMb = 30;
 const galleryImageMaxSizeBytes = galleryImageMaxSizeMb * 1024 * 1024;
+const heroImageMaxSizeMb = 30;
+const heroImageMaxSizeBytes = heroImageMaxSizeMb * 1024 * 1024;
 
 async function getOrCreateDraftVersionId(supabase: SupabaseClient): Promise<string> {
   const existingResult = await supabase
@@ -205,6 +210,40 @@ export async function uploadGalleryImages(formData: FormData): Promise<UploadGal
   revalidatePath("/gallery");
 
   return { ok: true, uploadedCount: uploadedRows.length };
+}
+
+export async function uploadHeroImage(formData: FormData): Promise<UploadHeroImageResult> {
+  if (!getSupabaseConfig().isConfigured) {
+    return { ok: false, message: "Supabase is not configured." };
+  }
+
+  const file = formData.get("image");
+
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, message: "Select a hero image." };
+  }
+
+  if (!file.type.startsWith("image/")) {
+    return { ok: false, message: `${file.name} is not an image.` };
+  }
+
+  if (file.size > heroImageMaxSizeBytes) {
+    return { ok: false, message: `${file.name} is larger than ${heroImageMaxSizeMb}MB.` };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const storagePath = buildHeroStoragePath(file.name);
+  const uploadResult = await supabase.storage.from("wedding-gallery").upload(storagePath, file);
+
+  if (uploadResult.error) {
+    return { ok: false, message: uploadResult.error.message };
+  }
+
+  const { data } = supabase.storage.from("wedding-gallery").getPublicUrl(storagePath);
+
+  revalidatePath("/admin/content");
+
+  return { ok: true, publicUrl: data.publicUrl };
 }
 
 export async function uploadGalleryImagesAction(

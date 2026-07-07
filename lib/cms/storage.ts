@@ -35,3 +35,7 @@ export function buildGalleryStoragePath({
 }: GalleryStoragePathInput): string {
   return `${slugifyValue(albumSlug, "album")}/${now}-${slugifyFileName(fileName)}`;
 }
+
+export function buildHeroStoragePath(fileName: string, now = Date.now()): string {
+  return `hero/${now}-${slugifyFileName(fileName)}`;
+}
