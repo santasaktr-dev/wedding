@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { deleteGalleryImage, saveGalleryImageOrder, uploadGalleryImagesAction } from "../../../lib/cms/actions";
@@ -20,6 +20,7 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
   const [uploadState, uploadFormAction, isUploadPending] = useActionState(uploadGalleryImagesAction, { ok: false });
   const [deleteState, setDeleteState] = useState<{ ok: boolean; message?: string } | null>(null);
   const [isDeletePending, startDeleteTransition] = useTransition();
+  const uploadFormRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
   const selectedAlbum = useMemo(
     () => albums.find((album) => album.id === selectedAlbumId) ?? albums[0],
@@ -143,7 +144,11 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
               </div>
             ) : null}
 
-            <form action={uploadFormAction} className="mb-5 border border-dashed border-[#d6c8a5] bg-white p-4">
+            <form
+              action={uploadFormAction}
+              className="mb-5 border border-dashed border-[#d6c8a5] bg-white p-4"
+              ref={uploadFormRef}
+            >
               <input name="albumId" type="hidden" value={selectedAlbum.id} />
               <input name="albumSlug" type="hidden" value={selectedAlbum.slug} />
               <label className="block">
@@ -153,6 +158,11 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
                   className="block w-full text-sm text-[#3e4d3a] file:mr-4 file:border-0 file:bg-[#0a1f44] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#fbf8f0]"
                   multiple
                   name="images"
+                  onChange={(event) => {
+                    if (event.currentTarget.files && event.currentTarget.files.length > 0) {
+                      uploadFormRef.current?.requestSubmit();
+                    }
+                  }}
                   type="file"
                 />
                 <span className="mt-2 block text-xs leading-5 text-[#3e4d3a]">
@@ -164,7 +174,7 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
                 disabled={isUploadPending}
                 type="submit"
               >
-                {isUploadPending ? "Uploading..." : "Upload selected photos"}
+                {isUploadPending ? "Uploading..." : "Upload now"}
               </button>
             </form>
 

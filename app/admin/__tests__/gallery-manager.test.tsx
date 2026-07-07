@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { fallbackCmsSnapshot } from "../../../lib/cms/fallback";
 import type { GalleryAlbum } from "../../../lib/cms/types";
@@ -12,6 +12,10 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("GalleryManager", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("renders albums and selects an album", () => {
     render(<GalleryManager initialAlbums={fallbackCmsSnapshot.albums} />);
 
@@ -56,5 +60,19 @@ describe("GalleryManager", () => {
     render(<GalleryManager initialAlbums={fallbackCmsSnapshot.albums} />);
 
     expect(screen.getByRole("img", { name: /prewedding portrait/i })).toHaveClass("object-contain");
+  });
+
+  it("submits the upload form when photos are selected", () => {
+    const requestSubmit = vi.spyOn(HTMLFormElement.prototype, "requestSubmit").mockImplementation(() => {});
+
+    render(<GalleryManager initialAlbums={fallbackCmsSnapshot.albums} />);
+
+    fireEvent.change(screen.getByLabelText(/upload photos/i), {
+      target: {
+        files: [new File(["image"], "first.jpg", { type: "image/jpeg" }), new File(["image"], "second.jpg", { type: "image/jpeg" })],
+      },
+    });
+
+    expect(requestSubmit).toHaveBeenCalledTimes(1);
   });
 });

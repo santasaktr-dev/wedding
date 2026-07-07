@@ -20,6 +20,9 @@ type CmsActionResult = {
   ok: boolean;
   message?: string;
 };
+type UploadGalleryImagesResult = CmsActionResult & {
+  uploadedCount?: number;
+};
 
 let fallbackDraftContent: WeddingContent = structuredClone(fallbackCmsSnapshot.content) as WeddingContent;
 
@@ -127,7 +130,7 @@ export async function saveDraftContent(content: WeddingContent): Promise<CmsActi
   }
 }
 
-export async function uploadGalleryImages(formData: FormData): Promise<CmsActionResult> {
+export async function uploadGalleryImages(formData: FormData): Promise<UploadGalleryImagesResult> {
   if (!getSupabaseConfig().isConfigured) {
     return { ok: false, message: "Supabase is not configured." };
   }
@@ -201,7 +204,7 @@ export async function uploadGalleryImages(formData: FormData): Promise<CmsAction
   revalidatePath("/admin/gallery");
   revalidatePath("/gallery");
 
-  return { ok: true };
+  return { ok: true, uploadedCount: uploadedRows.length };
 }
 
 export async function uploadGalleryImagesAction(
@@ -214,7 +217,12 @@ export async function uploadGalleryImagesAction(
     return result;
   }
 
-  return { ok: true, message: "Uploaded selected photos." };
+  const uploadedCount = result.uploadedCount ?? 0;
+
+  return {
+    ok: true,
+    message: uploadedCount === 1 ? "Uploaded 1 photo." : `Uploaded ${uploadedCount} photos.`,
+  };
 }
 
 export async function uploadGalleryImagesFromForm(formData: FormData): Promise<void> {
@@ -370,4 +378,14 @@ export async function publishDraftContent(): Promise<CmsActionResult> {
 
 export async function publishDraftContentFromForm(): Promise<void> {
   await publishDraftContent();
+}
+
+export async function publishDraftContentAction(): Promise<CmsActionResult> {
+  const result = await publishDraftContent();
+
+  if (!result.ok) {
+    return result;
+  }
+
+  return { ok: true, message: "Published draft changes." };
 }
