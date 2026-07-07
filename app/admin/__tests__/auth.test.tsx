@@ -138,11 +138,11 @@ describe("ContentPage", () => {
 });
 
 describe("GalleryPage", () => {
-  it("renders a protected gallery placeholder", () => {
+  it("renders the protected gallery manager", () => {
     render(<GalleryPage />);
 
-    expect(screen.getByRole("heading", { name: /gallery/i })).toBeInTheDocument();
-    expect(screen.getByText(/gallery manager arrives in an upcoming task/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /albums/i })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: /gallery albums/i })).toBeInTheDocument();
   });
 });
 
