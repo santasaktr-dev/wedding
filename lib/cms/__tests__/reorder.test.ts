@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { moveItem, normalizeSortOrder } from "../reorder";
+import { moveItem, moveItemById, normalizeSortOrder } from "../reorder";
 
 describe("moveItem", () => {
   it("moves an item to a later index without mutating the input", () => {
@@ -10,6 +10,31 @@ describe("moveItem", () => {
 
     expect(result).toEqual(["a", "c", "d", "b"]);
     expect(items).toEqual(["a", "b", "c", "d"]);
+  });
+});
+
+describe("moveItemById", () => {
+  it("moves an item before the target id without mutating the input", () => {
+    const items = [
+      { id: "first", sortOrder: 0 },
+      { id: "second", sortOrder: 1 },
+      { id: "third", sortOrder: 2 },
+    ];
+
+    const result = moveItemById(items, "third", "first");
+
+    expect(result.map((item) => item.id)).toEqual(["third", "first", "second"]);
+    expect(items.map((item) => item.id)).toEqual(["first", "second", "third"]);
+  });
+
+  it("returns the original order when ids are missing", () => {
+    const items = [
+      { id: "first", sortOrder: 0 },
+      { id: "second", sortOrder: 1 },
+    ];
+
+    expect(moveItemById(items, "missing", "first")).toEqual(items);
+    expect(moveItemById(items, "first", "missing")).toEqual(items);
   });
 });
 

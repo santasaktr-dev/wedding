@@ -14,6 +14,17 @@ export function moveItem<T>(items: readonly T[], fromIndex: number, toIndex: num
   return nextItems;
 }
 
+export function moveItemById<T extends { id: string }>(items: readonly T[], activeId: string, overId: string): T[] {
+  const fromIndex = items.findIndex((item) => item.id === activeId);
+  const toIndex = items.findIndex((item) => item.id === overId);
+
+  if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+    return [...items];
+  }
+
+  return moveItem(items, fromIndex, toIndex);
+}
+
 export function normalizeSortOrder<T extends SortableItem>(items: readonly T[]): T[] {
   return items.map((item, index) => ({
     ...item,

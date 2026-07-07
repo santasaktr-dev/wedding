@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { deleteGalleryImage, saveGalleryImageOrder, uploadGalleryImages } from "../../../lib/cms/actions";
-import { moveItem, normalizeSortOrder } from "../../../lib/cms/reorder";
+import { moveItem, moveItemById, normalizeSortOrder } from "../../../lib/cms/reorder";
 import type { GalleryAlbum, GalleryImage } from "../../../lib/cms/types";
 import { getLocalizedText } from "../../../lib/cms/validation";
 import { ImageGrid } from "./ImageGrid";
@@ -33,6 +33,26 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
     }
 
     const reordered = normalizeSortOrder(moveItem(selectedAlbum.images, fromIndex, toIndex));
+    setAlbums((current) =>
+      current.map((album) => (album.id === selectedAlbum.id ? { ...album, images: reordered } : album)),
+    );
+    void saveGalleryImageOrder(
+      selectedAlbum.id,
+      reordered.map((image) => image.id),
+    );
+  };
+
+  const reorderImage = (activeId: string, overId: string) => {
+    if (!selectedAlbum) {
+      return;
+    }
+
+    const reordered = normalizeSortOrder(moveItemById(selectedAlbum.images, activeId, overId));
+
+    if (reordered.map((image) => image.id).join(",") === selectedAlbum.images.map((image) => image.id).join(",")) {
+      return;
+    }
+
     setAlbums((current) =>
       current.map((album) => (album.id === selectedAlbum.id ? { ...album, images: reordered } : album)),
     );
@@ -193,6 +213,7 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
               isDeleting={isDeletePending}
               onDelete={deleteImage}
               onMove={moveImage}
+              onReorder={reorderImage}
             />
           </>
         ) : (

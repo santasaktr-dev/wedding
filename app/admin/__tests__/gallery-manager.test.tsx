@@ -71,6 +71,12 @@ describe("GalleryManager", () => {
     expect(screen.getByRole("button", { name: /delete classic portrait/i })).toBeInTheDocument();
   });
 
+  it("renders drag handles for reordering images", () => {
+    render(<GalleryManager initialAlbums={fallbackCmsSnapshot.albums} />);
+
+    expect(screen.getByRole("button", { name: /drag classic portrait to reorder/i })).toBeInTheDocument();
+  });
+
   it("shows admin gallery images without cropping them", () => {
     render(<GalleryManager initialAlbums={fallbackCmsSnapshot.albums} />);
 
