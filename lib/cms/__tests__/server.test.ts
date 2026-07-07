@@ -1,11 +1,79 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fallbackCmsSnapshot } from "../fallback";
-import { loadCmsSnapshotFromRows } from "../server";
+import { getPublishedCmsSnapshot, loadCmsSnapshotFromRows } from "../server";
+
+const supabaseMocks = vi.hoisted(() => ({
+  getSupabaseConfig: vi.fn(() => ({ url: undefined, anonKey: undefined, isConfigured: false })),
+  createSupabaseServerClient: vi.fn(),
+}));
+
+vi.mock("../../supabase/config", () => ({
+  getSupabaseConfig: supabaseMocks.getSupabaseConfig,
+}));
+
+vi.mock("../../supabase/server", () => ({
+  createSupabaseServerClient: supabaseMocks.createSupabaseServerClient,
+}));
+
+function createQueryResult<T>(result: T) {
+  const promise = Promise.resolve(result);
+  const query = {
+    select: vi.fn(() => query),
+    eq: vi.fn(() => query),
+    order: vi.fn(() => query),
+    limit: vi.fn(() => query),
+    maybeSingle: vi.fn(() => promise),
+    then: promise.then.bind(promise),
+  };
+
+  return query;
+}
 
 describe("loadCmsSnapshotFromRows", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    supabaseMocks.getSupabaseConfig.mockReturnValue({
+      url: undefined,
+      anonKey: undefined,
+      isConfigured: false,
+    });
+  });
+
   it("returns fallback when rows are missing", () => {
     expect(loadCmsSnapshotFromRows({ sections: [], albums: [], images: [] })).toEqual(fallbackCmsSnapshot);
+  });
+
+  it("maps snake_case section keys into camelCase content keys", () => {
+    const snapshot = loadCmsSnapshotFromRows({
+      sections: [
+        {
+          section_key: "event_info",
+          language: "en",
+          content: {
+            title: { en: "Updated Event Info", th: "อัปเดตรายละเอียดงาน" },
+          },
+        },
+        {
+          section_key: "dress_code",
+          language: "en",
+          content: {
+            title: { en: "Updated Dress Code", th: "อัปเดตธีมชุด" },
+          },
+        },
+      ],
+      albums: [],
+      images: [],
+    });
+
+    expect(snapshot.content.eventInfo.title).toEqual({
+      en: "Updated Event Info",
+      th: "อัปเดตรายละเอียดงาน",
+    });
+    expect(snapshot.content.dressCode.title).toEqual({
+      en: "Updated Dress Code",
+      th: "อัปเดตธีมชุด",
+    });
   });
 
   it("maps and sorts gallery rows", () => {
@@ -92,5 +160,52 @@ describe("loadCmsSnapshotFromRows", () => {
       isCover: false,
       status: "published",
     });
+  });
+});
+
+describe("getPublishedCmsSnapshot", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns fallback when a published query fails", async () => {
+    supabaseMocks.getSupabaseConfig.mockReturnValue({
+      url: "https://example.supabase.co",
+      anonKey: "anon-key",
+      isConfigured: true,
+    });
+
+    const versionQuery = createQueryResult({
+      data: {
+        id: "published-version",
+        status: "published",
+        updated_at: "2026-07-07T01:00:00.000Z",
+        published_at: "2026-07-07T01:00:00.000Z",
+      },
+      error: new Error("version query failed"),
+    });
+    const albumsQuery = createQueryResult({ data: [], error: null });
+    const imagesQuery = createQueryResult({ data: [], error: null });
+    const sectionsQuery = createQueryResult({ data: [], error: null });
+
+    supabaseMocks.createSupabaseServerClient.mockResolvedValue({
+      from: vi.fn((table: string) => {
+        if (table === "content_versions") {
+          return versionQuery;
+        }
+        if (table === "gallery_albums") {
+          return albumsQuery;
+        }
+        if (table === "gallery_images") {
+          return imagesQuery;
+        }
+        if (table === "content_sections") {
+          return sectionsQuery;
+        }
+        throw new Error(`Unexpected table: ${table}`);
+      }),
+    });
+
+    await expect(getPublishedCmsSnapshot()).resolves.toEqual(fallbackCmsSnapshot);
   });
 });

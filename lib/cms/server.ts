@@ -51,6 +51,21 @@ type CmsRows = {
   images: GalleryImageRow[];
 };
 
+const contentSectionKeyMap = {
+  hero: "hero",
+  event_info: "eventInfo",
+  eventInfo: "eventInfo",
+  schedule: "schedule",
+  location: "location",
+  dress_code: "dressCode",
+  dressCode: "dressCode",
+  rsvp: "rsvp",
+  gallery: "gallery",
+  faq: "faq",
+  contact: "contact",
+  footer: "footer",
+} satisfies Record<string, keyof WeddingContent>;
+
 function cloneFallbackContent(): WeddingContent {
   return structuredClone(fallbackCmsSnapshot.content) as WeddingContent;
 }
@@ -59,16 +74,20 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isWeddingContentKey(key: string): key is keyof WeddingContent {
-  return key in fallbackCmsSnapshot.content;
+function getWeddingContentKey(key: string): keyof WeddingContent | undefined {
+  if (key in contentSectionKeyMap) {
+    return contentSectionKeyMap[key as keyof typeof contentSectionKeyMap];
+  }
+
+  return key in fallbackCmsSnapshot.content ? (key as keyof WeddingContent) : undefined;
 }
 
 function mergeSectionContent(content: WeddingContent, section: ContentSectionRow) {
-  if (!isWeddingContentKey(section.section_key) || !isObjectRecord(section.content)) {
+  const key = getWeddingContentKey(section.section_key);
+  if (!key || !isObjectRecord(section.content)) {
     return;
   }
 
-  const key = section.section_key;
   content[key] = {
     ...(content[key] as object),
     ...section.content,
@@ -143,7 +162,7 @@ export async function getPublishedCmsSnapshot(): Promise<CmsSnapshot> {
   }
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: version }, { data: albums }, { data: images }] = await Promise.all([
+  const [versionResult, albumsResult, imagesResult] = await Promise.all([
     supabase
       .from("content_versions")
       .select("id, status, updated_at, published_at")
@@ -155,13 +174,25 @@ export async function getPublishedCmsSnapshot(): Promise<CmsSnapshot> {
     supabase.from("gallery_images").select("*").eq("status", "published").order("sort_order"),
   ]);
 
-  const { data: sections } = version?.id
+  if (versionResult.error || albumsResult.error || imagesResult.error) {
+    return fallbackCmsSnapshot;
+  }
+
+  const version = versionResult.data;
+  const albums = albumsResult.data;
+  const images = imagesResult.data;
+
+  const sectionsResult = version?.id
     ? await supabase.from("content_sections").select("section_key, language, content").eq("version_id", version.id)
-    : { data: [] };
+    : { data: [], error: null };
+
+  if (sectionsResult.error) {
+    return fallbackCmsSnapshot;
+  }
 
   return loadCmsSnapshotFromRows({
     version: version as ContentVersionRow | null,
-    sections: (sections ?? []) as ContentSectionRow[],
+    sections: (sectionsResult.data ?? []) as ContentSectionRow[],
     albums: (albums ?? []) as GalleryAlbumRow[],
     images: (images ?? []) as GalleryImageRow[],
   });
