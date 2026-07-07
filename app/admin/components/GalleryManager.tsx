@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
-import { saveGalleryImageOrder, uploadGalleryImagesFromForm } from "../../../lib/cms/actions";
+import { saveGalleryImageOrder, uploadGalleryImagesAction } from "../../../lib/cms/actions";
 import { moveItem, normalizeSortOrder } from "../../../lib/cms/reorder";
 import type { GalleryAlbum } from "../../../lib/cms/types";
 import { getLocalizedText } from "../../../lib/cms/validation";
@@ -16,10 +17,18 @@ type GalleryManagerProps = {
 export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
   const [albums, setAlbums] = useState(initialAlbums);
   const [selectedAlbumId, setSelectedAlbumId] = useState(initialAlbums[0]?.id ?? "");
+  const [uploadState, uploadFormAction, isUploadPending] = useActionState(uploadGalleryImagesAction, { ok: false });
+  const router = useRouter();
   const selectedAlbum = useMemo(
     () => albums.find((album) => album.id === selectedAlbumId) ?? albums[0],
     [albums, selectedAlbumId],
   );
+
+  useEffect(() => {
+    if (uploadState.ok) {
+      router.refresh();
+    }
+  }, [router, uploadState.ok]);
 
   const moveImage = (fromIndex: number, toIndex: number) => {
     if (!selectedAlbum) {
@@ -93,7 +102,13 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
               </StatusBanner>
             </div>
 
-            <form action={uploadGalleryImagesFromForm} className="mb-5 border border-dashed border-[#d6c8a5] bg-white p-4">
+            {uploadState.message ? (
+              <div className="mb-5">
+                <StatusBanner tone={uploadState.ok ? "success" : "error"}>{uploadState.message}</StatusBanner>
+              </div>
+            ) : null}
+
+            <form action={uploadFormAction} className="mb-5 border border-dashed border-[#d6c8a5] bg-white p-4">
               <input name="albumId" type="hidden" value={selectedAlbum.id} />
               <input name="albumSlug" type="hidden" value={selectedAlbum.slug} />
               <label className="block">
@@ -108,9 +123,10 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
               </label>
               <button
                 className="mt-3 min-h-10 bg-[#0a1f44] px-4 text-sm font-semibold text-[#fbf8f0] transition hover:bg-[#142f5f]"
+                disabled={isUploadPending}
                 type="submit"
               >
-                Upload selected photos
+                {isUploadPending ? "Uploading..." : "Upload selected photos"}
               </button>
             </form>
 

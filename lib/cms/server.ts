@@ -51,6 +51,20 @@ type CmsRows = {
   images: GalleryImageRow[];
 };
 
+const defaultAdminGalleryAlbum: GalleryAlbumRow = {
+  id: "00000000-0000-4000-8000-000000000001",
+  slug: "highlights",
+  status: "draft",
+  sort_order: 0,
+  cover_image_id: null,
+  label_en: "Gallery",
+  label_th: "แกลเลอรี",
+  title_en: "Highlights",
+  title_th: "ไฮไลต์",
+  description_en: "Upload wedding photos here before publishing them.",
+  description_th: "อัปโหลดรูปงานแต่งไว้ที่นี่ก่อนเผยแพร่",
+};
+
 const contentSectionKeyMap = {
   hero: "hero",
   event_info: "eventInfo",
@@ -208,4 +222,45 @@ export async function getPublicGalleryAlbums(): Promise<GalleryAlbum[]> {
   const snapshot = await getPublishedCmsSnapshot();
 
   return snapshot.albums;
+}
+
+export async function getAdminGalleryAlbums(): Promise<GalleryAlbum[]> {
+  if (!getSupabaseConfig().isConfigured) {
+    return fallbackCmsSnapshot.albums;
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const albumsResult = await supabase.from("gallery_albums").select("*").order("sort_order");
+
+  if (albumsResult.error) {
+    return fallbackCmsSnapshot.albums;
+  }
+
+  let albums = (albumsResult.data ?? []) as GalleryAlbumRow[];
+
+  if (albums.length === 0) {
+    const createAlbumResult = await supabase
+      .from("gallery_albums")
+      .insert(defaultAdminGalleryAlbum)
+      .select("*")
+      .single();
+
+    if (createAlbumResult.error || !createAlbumResult.data) {
+      return fallbackCmsSnapshot.albums;
+    }
+
+    albums = [createAlbumResult.data as GalleryAlbumRow];
+  }
+
+  const imagesResult = await supabase.from("gallery_images").select("*").order("sort_order");
+
+  if (imagesResult.error) {
+    return fallbackCmsSnapshot.albums;
+  }
+
+  return loadCmsSnapshotFromRows({
+    sections: [],
+    albums,
+    images: (imagesResult.data ?? []) as GalleryImageRow[],
+  }).albums;
 }

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fallbackCmsSnapshot } from "../fallback";
-import { getPublishedCmsSnapshot, loadCmsSnapshotFromRows } from "../server";
+import { getAdminGalleryAlbums, getPublishedCmsSnapshot, loadCmsSnapshotFromRows } from "../server";
 
 const supabaseMocks = vi.hoisted(() => ({
   getSupabaseConfig: vi.fn(() => ({ url: undefined, anonKey: undefined, isConfigured: false })),
@@ -207,5 +207,82 @@ describe("getPublishedCmsSnapshot", () => {
     });
 
     await expect(getPublishedCmsSnapshot()).resolves.toEqual(fallbackCmsSnapshot);
+  });
+});
+
+describe("getAdminGalleryAlbums", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("loads draft gallery rows for the admin gallery", async () => {
+    supabaseMocks.getSupabaseConfig.mockReturnValue({
+      url: "https://example.supabase.co",
+      anonKey: "anon-key",
+      isConfigured: true,
+    });
+
+    const albumsQuery = createQueryResult({
+      data: [
+        {
+          id: "album-1",
+          slug: "highlights",
+          status: "draft",
+          sort_order: 0,
+          cover_image_id: null,
+          label_en: "Gallery",
+          label_th: "แกลเลอรี",
+          title_en: "Highlights",
+          title_th: "ไฮไลต์",
+          description_en: "Draft photos",
+          description_th: "รูปแบบร่าง",
+        },
+      ],
+      error: null,
+    });
+    const imagesQuery = createQueryResult({
+      data: [
+        {
+          id: "image-1",
+          album_id: "album-1",
+          storage_path: "highlights/photo.jpg",
+          public_url: "https://cdn.example.com/highlights/photo.jpg",
+          sort_order: 0,
+          caption_en: "",
+          caption_th: "",
+          alt_en: "",
+          alt_th: "",
+          is_cover: false,
+          status: "draft",
+        },
+      ],
+      error: null,
+    });
+
+    supabaseMocks.createSupabaseServerClient.mockResolvedValue({
+      from: vi.fn((table: string) => {
+        if (table === "gallery_albums") {
+          return albumsQuery;
+        }
+        if (table === "gallery_images") {
+          return imagesQuery;
+        }
+        throw new Error(`Unexpected table: ${table}`);
+      }),
+    });
+
+    await expect(getAdminGalleryAlbums()).resolves.toMatchObject([
+      {
+        id: "album-1",
+        status: "draft",
+        images: [
+          {
+            id: "image-1",
+            publicUrl: "https://cdn.example.com/highlights/photo.jpg",
+            status: "draft",
+          },
+        ],
+      },
+    ]);
   });
 });
