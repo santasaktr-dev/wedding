@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import AdminPage from "../(protected)/page";
 import ContentPage from "../(protected)/content/page";
+import GalleryPage from "../(protected)/gallery/page";
 import ProtectedAdminLayout from "../(protected)/layout";
+import SettingsPage from "../(protected)/settings/page";
 import { signInAdmin, signOutAdmin } from "../actions";
 import LoginPage from "../login/page";
 
@@ -123,6 +125,24 @@ describe("ContentPage", () => {
 
     expect(screen.getByRole("heading", { name: /content/i })).toBeInTheDocument();
     expect(screen.getByText(/content editor comes next/i)).toBeInTheDocument();
+  });
+});
+
+describe("GalleryPage", () => {
+  it("renders a protected gallery placeholder", () => {
+    render(<GalleryPage />);
+
+    expect(screen.getByRole("heading", { name: /gallery/i })).toBeInTheDocument();
+    expect(screen.getByText(/gallery manager arrives in an upcoming task/i)).toBeInTheDocument();
+  });
+});
+
+describe("SettingsPage", () => {
+  it("renders a protected settings placeholder", () => {
+    render(<SettingsPage />);
+
+    expect(screen.getByRole("heading", { name: /settings/i })).toBeInTheDocument();
+    expect(screen.getByText(/settings arrive in an upcoming task/i)).toBeInTheDocument();
   });
 });
 
