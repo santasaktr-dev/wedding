@@ -66,6 +66,7 @@ const defaultAdminGalleryAlbum: GalleryAlbumRow = {
 };
 
 const contentSectionKeyMap = {
+  navigation: "navigation",
   hero: "hero",
   event_info: "eventInfo",
   eventInfo: "eventInfo",

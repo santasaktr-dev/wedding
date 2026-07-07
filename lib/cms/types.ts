@@ -4,6 +4,14 @@ export type CmsStatus = "draft" | "published";
 
 export type LocalizedText = Record<Language, string>;
 
+export type NavigationItem = {
+  id: string;
+  href: string;
+  label: LocalizedText;
+  sortOrder: number;
+  isVisible: boolean;
+};
+
 export type EventInfoCard = {
   id: string;
   label: LocalizedText;
@@ -62,6 +70,9 @@ export type GalleryAlbum = {
 };
 
 export type WeddingContent = {
+  navigation: {
+    items: NavigationItem[];
+  };
   hero: {
     coupleName: string;
     date: LocalizedText;

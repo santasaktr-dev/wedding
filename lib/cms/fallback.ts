@@ -8,6 +8,66 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
   updatedAt: "2026-07-07T00:00:00.000Z",
   publishedAt: "2026-07-07T00:00:00.000Z",
   content: {
+    navigation: {
+      items: [
+        {
+          id: "event-info",
+          href: "#event-info",
+          label: { en: "Info", th: "ข้อมูล" },
+          sortOrder: 0,
+          isVisible: true,
+        },
+        {
+          id: "schedule",
+          href: "#schedule",
+          label: { en: "Schedule", th: "กำหนดการ" },
+          sortOrder: 1,
+          isVisible: true,
+        },
+        {
+          id: "gallery",
+          href: "#gallery",
+          label: { en: "Gallery", th: "แกลเลอรี" },
+          sortOrder: 2,
+          isVisible: true,
+        },
+        {
+          id: "location",
+          href: "#location",
+          label: { en: "Location", th: "สถานที่" },
+          sortOrder: 3,
+          isVisible: true,
+        },
+        {
+          id: "dress-code",
+          href: "#dress-code",
+          label: { en: "Dress Code", th: "ธีมชุด" },
+          sortOrder: 4,
+          isVisible: true,
+        },
+        {
+          id: "rsvp",
+          href: "#rsvp",
+          label: { en: "RSVP", th: "ตอบรับ" },
+          sortOrder: 5,
+          isVisible: true,
+        },
+        {
+          id: "faq",
+          href: "#faq",
+          label: { en: "FAQ", th: "FAQ" },
+          sortOrder: 6,
+          isVisible: true,
+        },
+        {
+          id: "contact",
+          href: "#contact",
+          label: { en: "Contact", th: "ติดต่อ" },
+          sortOrder: 7,
+          isVisible: true,
+        },
+      ],
+    },
     hero: {
       coupleName: "Jajah & Smart",
       date: {

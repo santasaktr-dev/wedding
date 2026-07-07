@@ -5,17 +5,34 @@
 import { useMemo, useState, useTransition } from "react";
 
 import { saveDraftContent, uploadHeroImage } from "../../../lib/cms/actions";
-import type { Language, LocalizedText, WeddingContent } from "../../../lib/cms/types";
+import type { DressColor, Language, LocalizedText, WeddingContent } from "../../../lib/cms/types";
 import { LanguageTabs } from "./LanguageTabs";
 import { StatusBanner } from "./StatusBanner";
 
-type EditableSection = "hero" | "eventInfo" | "rsvp" | "contact" | "footer";
+type EditableSection =
+  | "navigation"
+  | "hero"
+  | "eventInfo"
+  | "schedule"
+  | "location"
+  | "dressCode"
+  | "gallery"
+  | "rsvp"
+  | "faq"
+  | "contact"
+  | "footer";
 type SaveStatus = "idle" | "saved" | "error";
 
 const sectionItems: Array<{ id: EditableSection; label: string; description: string }> = [
+  { id: "navigation", label: "Navigation", description: "Menu labels and section visibility." },
   { id: "hero", label: "Hero", description: "Headline, date, intro, and primary buttons." },
   { id: "eventInfo", label: "Event Info", description: "Section heading, intro, and detail cards." },
+  { id: "schedule", label: "Schedule", description: "Timeline heading and event rows." },
+  { id: "location", label: "Location", description: "Venue, maps, address, and transport copy." },
+  { id: "dressCode", label: "Dress Code", description: "Dress heading, keywords, and color palette." },
+  { id: "gallery", label: "Gallery", description: "Gallery heading, intro, and CTA copy." },
   { id: "rsvp", label: "RSVP", description: "RSVP heading, intro, note, and deadline." },
+  { id: "faq", label: "FAQ", description: "FAQ heading, questions, and answers." },
   { id: "contact", label: "Contact", description: "Organizer contact copy and links." },
   { id: "footer", label: "Footer", description: "Closing name and detail line." },
 ];
@@ -128,6 +145,153 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
     }));
   };
 
+  const updateNavigationItem = (id: string, field: "label" | "isVisible", value: string | boolean) => {
+    setStatus("idle");
+    setContent((current) => ({
+      ...current,
+      navigation: {
+        ...current.navigation,
+        items: current.navigation.items.map((item) =>
+          item.id === id
+            ? field === "label"
+              ? {
+                  ...item,
+                  label: {
+                    ...item.label,
+                    [language]: value as string,
+                  },
+                }
+              : {
+                  ...item,
+                  isVisible: value as boolean,
+                }
+            : item,
+        ),
+      },
+    }));
+  };
+
+  const updateScheduleItem = (id: string, field: "time" | "title" | "detail", value: string) => {
+    setStatus("idle");
+    setContent((current) => ({
+      ...current,
+      schedule: {
+        ...current.schedule,
+        items: current.schedule.items.map((item) =>
+          item.id === id
+            ? field === "time"
+              ? { ...item, time: value }
+              : {
+                  ...item,
+                  [field]: {
+                    ...item[field],
+                    [language]: value,
+                  },
+                }
+            : item,
+        ),
+      },
+    }));
+  };
+
+  const updateDressKeyword = (index: number, value: string) => {
+    setStatus("idle");
+    setContent((current) => ({
+      ...current,
+      dressCode: {
+        ...current.dressCode,
+        keywords: current.dressCode.keywords.map((keyword, keywordIndex) =>
+          keywordIndex === index
+            ? {
+                ...keyword,
+                [language]: value,
+              }
+            : keyword,
+        ),
+      },
+    }));
+  };
+
+  const updateDressColor = (index: number, field: keyof DressColor, value: string) => {
+    setStatus("idle");
+    setContent((current) => ({
+      ...current,
+      dressCode: {
+        ...current.dressCode,
+        colors: current.dressCode.colors.map((color, colorIndex) =>
+          colorIndex === index ? { ...color, [field]: value } : color,
+        ),
+      },
+    }));
+  };
+
+  const updateTransportSectionTitle = (id: string, value: string) => {
+    setStatus("idle");
+    setContent((current) => ({
+      ...current,
+      location: {
+        ...current.location,
+        transportSections: current.location.transportSections.map((section) =>
+          section.id === id
+            ? {
+                ...section,
+                title: {
+                  ...section.title,
+                  [language]: value,
+                },
+              }
+            : section,
+        ),
+      },
+    }));
+  };
+
+  const updateTransportItem = (sectionId: string, index: number, value: string) => {
+    setStatus("idle");
+    setContent((current) => ({
+      ...current,
+      location: {
+        ...current.location,
+        transportSections: current.location.transportSections.map((section) =>
+          section.id === sectionId
+            ? {
+                ...section,
+                items: section.items.map((item, itemIndex) =>
+                  itemIndex === index
+                    ? {
+                        ...item,
+                        [language]: value,
+                      }
+                    : item,
+                ),
+              }
+            : section,
+        ),
+      },
+    }));
+  };
+
+  const updateFaqItem = (id: string, field: "question" | "answer", value: string) => {
+    setStatus("idle");
+    setContent((current) => ({
+      ...current,
+      faq: {
+        ...current.faq,
+        items: current.faq.items.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                [field]: {
+                  ...item[field],
+                  [language]: value,
+                },
+              }
+            : item,
+        ),
+      },
+    }));
+  };
+
   const handleSave = () => {
     startTransition(async () => {
       try {
@@ -234,6 +398,38 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
         </div>
 
         <div className="mt-6 grid gap-5">
+          {activeSection === "navigation" ? (
+            <div className="grid gap-4">
+              {content.navigation.items
+                .toSorted((first, second) => first.sortOrder - second.sortOrder)
+                .map((item) => (
+                  <div className="border border-[#d6c8a5] bg-white p-4" key={item.id}>
+                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-[#7c5c3b]">{item.id}</p>
+                        <p className="mt-1 text-xs leading-5 text-[#3e4d3a]">Locked link: {item.href}</p>
+                      </div>
+                      <label className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#0a1f44]">
+                        <input
+                          checked={item.isVisible}
+                          className="h-4 w-4 accent-[#0a1f44]"
+                          onChange={(event) => updateNavigationItem(item.id, "isVisible", event.target.checked)}
+                          type="checkbox"
+                        />
+                        Show in menu
+                      </label>
+                    </div>
+                    <TextField
+                      id={`nav-${item.id}-label`}
+                      label={`${item.id} label`}
+                      onChange={(value) => updateNavigationItem(item.id, "label", value)}
+                      value={textValue(item.label, language)}
+                    />
+                  </div>
+                ))}
+            </div>
+          ) : null}
+
           {activeSection === "hero" ? (
             <>
               <TextField
@@ -348,6 +544,267 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
             </>
           ) : null}
 
+          {activeSection === "schedule" ? (
+            <>
+              <TextField
+                id="schedule-eyebrow"
+                label="Eyebrow"
+                onChange={(value) => updateLocalized("schedule", "eyebrow", value)}
+                value={textValue(content.schedule.eyebrow, language)}
+              />
+              <TextField
+                id="schedule-title"
+                label="Title"
+                onChange={(value) => updateLocalized("schedule", "title", value)}
+                value={textValue(content.schedule.title, language)}
+              />
+              <TextField
+                id="schedule-intro"
+                label="Intro"
+                multiline
+                onChange={(value) => updateLocalized("schedule", "intro", value)}
+                value={textValue(content.schedule.intro, language)}
+              />
+              <div className="grid gap-4">
+                {content.schedule.items
+                  .toSorted((first, second) => first.sortOrder - second.sortOrder)
+                  .map((item) => (
+                    <div className="border border-[#d6c8a5] bg-white p-4" key={item.id}>
+                      <p className="mb-3 text-sm font-semibold text-[#7c5c3b]">{item.id}</p>
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <TextField
+                          id={`schedule-${item.id}-time`}
+                          label="Time"
+                          onChange={(value) => updateScheduleItem(item.id, "time", value)}
+                          value={item.time}
+                        />
+                        <TextField
+                          id={`schedule-${item.id}-title`}
+                          label="Title"
+                          onChange={(value) => updateScheduleItem(item.id, "title", value)}
+                          value={textValue(item.title, language)}
+                        />
+                        <TextField
+                          id={`schedule-${item.id}-detail`}
+                          label="Detail"
+                          onChange={(value) => updateScheduleItem(item.id, "detail", value)}
+                          value={textValue(item.detail, language)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </>
+          ) : null}
+
+          {activeSection === "location" ? (
+            <>
+              <TextField
+                id="location-eyebrow"
+                label="Eyebrow"
+                onChange={(value) => updateLocalized("location", "eyebrow", value)}
+                value={textValue(content.location.eyebrow, language)}
+              />
+              <TextField
+                id="location-title"
+                label="Title"
+                onChange={(value) => updateLocalized("location", "title", value)}
+                value={textValue(content.location.title, language)}
+              />
+              <TextField
+                id="location-intro"
+                label="Intro"
+                multiline
+                onChange={(value) => updateLocalized("location", "intro", value)}
+                value={textValue(content.location.intro, language)}
+              />
+              <TextField
+                id="location-address"
+                label="Address"
+                multiline
+                onChange={(value) => updateLocalized("location", "address", value)}
+                value={textValue(content.location.address, language)}
+              />
+              <TextField
+                id="location-parking-note"
+                label="Parking note"
+                multiline
+                onChange={(value) => updateLocalized("location", "parkingNote", value)}
+                value={textValue(content.location.parkingNote, language)}
+              />
+              <div className="grid gap-4 md:grid-cols-2">
+                <TextField
+                  id="location-maps-url"
+                  label="Google Maps URL"
+                  onChange={(value) => updatePlain("location", "mapsUrl", value)}
+                  type="url"
+                  value={content.location.mapsUrl}
+                />
+                <TextField
+                  id="location-maps-embed-url"
+                  label="Map embed URL"
+                  onChange={(value) => updatePlain("location", "mapsEmbedUrl", value)}
+                  type="url"
+                  value={content.location.mapsEmbedUrl}
+                />
+                <TextField
+                  id="location-maps-button"
+                  label="Maps button"
+                  onChange={(value) => updateLocalized("location", "mapsButton", value)}
+                  value={textValue(content.location.mapsButton, language)}
+                />
+                <TextField
+                  id="location-contact-button"
+                  label="Contact button"
+                  onChange={(value) => updateLocalized("location", "contactButton", value)}
+                  value={textValue(content.location.contactButton, language)}
+                />
+              </div>
+              <TextField
+                id="location-transport-title"
+                label="Transport title"
+                onChange={(value) => updateLocalized("location", "transportTitle", value)}
+                value={textValue(content.location.transportTitle, language)}
+              />
+              <div className="grid gap-4">
+                {content.location.transportSections
+                  .toSorted((first, second) => first.sortOrder - second.sortOrder)
+                  .map((section) => (
+                    <div className="border border-[#d6c8a5] bg-white p-4" key={section.id}>
+                      <TextField
+                        id={`transport-${section.id}-title`}
+                        label={`${section.id} title`}
+                        onChange={(value) => updateTransportSectionTitle(section.id, value)}
+                        value={textValue(section.title, language)}
+                      />
+                      <div className="mt-4 grid gap-4">
+                        {section.items.map((item, index) => (
+                          <TextField
+                            id={`transport-${section.id}-${index}`}
+                            key={`${section.id}-${index}`}
+                            label={`Item ${index + 1}`}
+                            multiline
+                            onChange={(value) => updateTransportItem(section.id, index, value)}
+                            value={textValue(item, language)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </>
+          ) : null}
+
+          {activeSection === "dressCode" ? (
+            <>
+              <TextField
+                id="dress-eyebrow"
+                label="Eyebrow"
+                onChange={(value) => updateLocalized("dressCode", "eyebrow", value)}
+                value={textValue(content.dressCode.eyebrow, language)}
+              />
+              <TextField
+                id="dress-title"
+                label="Title"
+                onChange={(value) => updateLocalized("dressCode", "title", value)}
+                value={textValue(content.dressCode.title, language)}
+              />
+              <TextField
+                id="dress-intro"
+                label="Intro"
+                multiline
+                onChange={(value) => updateLocalized("dressCode", "intro", value)}
+                value={textValue(content.dressCode.intro, language)}
+              />
+              <div className="grid gap-4 md:grid-cols-3">
+                {content.dressCode.keywords.map((keyword, index) => (
+                  <TextField
+                    id={`dress-keyword-${index}`}
+                    key={`dress-keyword-${index}`}
+                    label={`Keyword ${index + 1}`}
+                    onChange={(value) => updateDressKeyword(index, value)}
+                    value={textValue(keyword, language)}
+                  />
+                ))}
+              </div>
+              <TextField
+                id="dress-palette-title"
+                label="Palette title"
+                onChange={(value) => updateLocalized("dressCode", "paletteTitle", value)}
+                value={textValue(content.dressCode.paletteTitle, language)}
+              />
+              <div className="grid gap-4">
+                {content.dressCode.colors.map((color, index) => (
+                  <div className="grid gap-4 border border-[#d6c8a5] bg-white p-4 md:grid-cols-[1fr_1fr_auto]" key={`${color.name}-${index}`}>
+                    <TextField
+                      id={`dress-color-${index}-name`}
+                      label="Color name"
+                      onChange={(value) => updateDressColor(index, "name", value)}
+                      value={color.name}
+                    />
+                    <TextField
+                      id={`dress-color-${index}-hex`}
+                      label="Hex"
+                      onChange={(value) => updateDressColor(index, "hex", value)}
+                      value={color.hex}
+                    />
+                    <div className="h-12 border border-[#0a1f44]/10 md:mt-8" style={{ backgroundColor: color.hex }} />
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : null}
+
+          {activeSection === "gallery" ? (
+            <>
+              <TextField
+                id="gallery-eyebrow"
+                label="Eyebrow"
+                onChange={(value) => updateLocalized("gallery", "eyebrow", value)}
+                value={textValue(content.gallery.eyebrow, language)}
+              />
+              <TextField
+                id="gallery-title"
+                label="Title"
+                onChange={(value) => updateLocalized("gallery", "title", value)}
+                value={textValue(content.gallery.title, language)}
+              />
+              <TextField
+                id="gallery-intro"
+                label="Intro"
+                multiline
+                onChange={(value) => updateLocalized("gallery", "intro", value)}
+                value={textValue(content.gallery.intro, language)}
+              />
+              <div className="grid gap-4 md:grid-cols-2">
+                <TextField
+                  id="gallery-cta"
+                  label="CTA"
+                  onChange={(value) => updateLocalized("gallery", "cta", value)}
+                  value={textValue(content.gallery.cta, language)}
+                />
+                <TextField
+                  id="gallery-album-label"
+                  label="Album label"
+                  onChange={(value) => updateLocalized("gallery", "albumLabel", value)}
+                  value={textValue(content.gallery.albumLabel, language)}
+                />
+                <TextField
+                  id="gallery-photo-count-label"
+                  label="Photo count label"
+                  onChange={(value) => updateLocalized("gallery", "photoCountLabel", value)}
+                  value={textValue(content.gallery.photoCountLabel, language)}
+                />
+                <TextField
+                  id="gallery-coming-soon"
+                  label="Coming soon"
+                  onChange={(value) => updateLocalized("gallery", "comingSoon", value)}
+                  value={textValue(content.gallery.comingSoon, language)}
+                />
+              </div>
+            </>
+          ) : null}
+
           {activeSection === "rsvp" ? (
             <>
               <TextField
@@ -383,6 +840,47 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
                 type="date"
                 value={content.rsvp.deadline}
               />
+            </>
+          ) : null}
+
+          {activeSection === "faq" ? (
+            <>
+              <TextField
+                id="faq-eyebrow"
+                label="Eyebrow"
+                onChange={(value) => updateLocalized("faq", "eyebrow", value)}
+                value={textValue(content.faq.eyebrow, language)}
+              />
+              <TextField
+                id="faq-title"
+                label="Title"
+                onChange={(value) => updateLocalized("faq", "title", value)}
+                value={textValue(content.faq.title, language)}
+              />
+              <div className="grid gap-4">
+                {content.faq.items
+                  .toSorted((first, second) => first.sortOrder - second.sortOrder)
+                  .map((item) => (
+                    <div className="border border-[#d6c8a5] bg-white p-4" key={item.id}>
+                      <p className="mb-3 text-sm font-semibold text-[#7c5c3b]">{item.id}</p>
+                      <div className="grid gap-4">
+                        <TextField
+                          id={`faq-${item.id}-question`}
+                          label="Question"
+                          onChange={(value) => updateFaqItem(item.id, "question", value)}
+                          value={textValue(item.question, language)}
+                        />
+                        <TextField
+                          id={`faq-${item.id}-answer`}
+                          label="Answer"
+                          multiline
+                          onChange={(value) => updateFaqItem(item.id, "answer", value)}
+                          value={textValue(item.answer, language)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+              </div>
             </>
           ) : null}
 

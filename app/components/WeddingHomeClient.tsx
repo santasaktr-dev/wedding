@@ -25,14 +25,6 @@ const icons = {
   dress: Shirt,
 };
 
-const dressColors = [
-  { name: "Oxford Navy", hex: "#0A1F44" },
-  { name: "Tweed Brown", hex: "#7C5C3B" },
-  { name: "Deep Olive", hex: "#3E4D3A" },
-  { name: "Camel Beige", hex: "#D6C8A5" },
-  { name: "Ash Grey", hex: "#BDBFBA" },
-];
-
 const copy = {
   en: {
     nav: [
@@ -425,8 +417,27 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
   const [language, setLanguage] = useState<Language>("en");
   const t = copy[language];
   const localized = (value: Record<Language, string>, fallback: string) => value[language] || fallback;
-  const hero = snapshot.content.hero;
+  const content = snapshot.content;
+  const hero = content.hero;
   const heroImageSrc = hero.imageSrc || "/images/wedding-hero.png";
+  const navItems = content.navigation.items
+    .filter((item) => item.isVisible)
+    .toSorted((first, second) => first.sortOrder - second.sortOrder);
+  const eventCards = content.eventInfo.cards.map((card) => ({
+    ...card,
+    icon: icons[card.id as keyof typeof icons] ?? CalendarDays,
+  }));
+  const scheduleItems = content.schedule.items.toSorted((first, second) => first.sortOrder - second.sortOrder);
+  const transportSections = content.location.transportSections.toSorted(
+    (first, second) => first.sortOrder - second.sortOrder,
+  );
+  const faqItems = content.faq.items.toSorted((first, second) => first.sortOrder - second.sortOrder);
+  const bottomNavItems = navItems
+    .filter((item) => ["location", "schedule", "dress-code", "rsvp"].includes(item.id))
+    .map((item) => ({
+      ...item,
+      icon: item.id === "location" ? MapPin : item.id === "schedule" ? Clock : item.id === "dress-code" ? Shirt : Users,
+    }));
   const previewImages = snapshot.albums[0]?.images.slice(0, 3) ?? [];
   const isThai = language === "th";
   const languageStyle = isThai
@@ -450,9 +461,9 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
             J&S
           </a>
           <div className="hidden items-center gap-7 text-sm font-medium md:flex">
-            {t.nav.map((item) => (
+            {navItems.map((item) => (
               <a className="transition hover:text-[#D6C8A5]" href={item.href} key={item.href}>
-                {item.label}
+                {localized(item.label, item.id)}
               </a>
             ))}
           </div>
@@ -522,23 +533,26 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
 
       <section className="px-4 py-16 sm:px-6 lg:px-8" id="event-info">
         <div className="mx-auto max-w-7xl">
-          <SectionHeader eyebrow={t.eventEyebrow} title={t.eventTitle}>
-            <p>{t.eventIntro}</p>
+          <SectionHeader
+            eyebrow={localized(content.eventInfo.eyebrow, t.eventEyebrow)}
+            title={localized(content.eventInfo.title, t.eventTitle)}
+          >
+            <p>{localized(content.eventInfo.intro, t.eventIntro)}</p>
           </SectionHeader>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {t.eventCards.map((card) => {
+            {eventCards.map((card) => {
               const Icon = card.icon;
               return (
                 <article
                   className="rounded border border-[#0A1F44]/10 bg-white/70 p-6 shadow-[0_18px_60px_rgba(10,31,68,0.08)]"
-                  key={card.label}
+                  key={card.id}
                 >
                   <Icon aria-hidden="true" className="mb-8 text-[#7C5C3B]" size={24} />
                   <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#0A1F44]/55">
-                    {card.label}
+                    {localized(card.label, card.id)}
                   </h3>
                   <p className="mt-3 text-xl font-semibold leading-snug text-[#0A1F44]">
-                    {card.value}
+                    {localized(card.value, "")}
                   </p>
                 </article>
               );
@@ -549,20 +563,23 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
 
       <section className="bg-[#0A1F44] px-4 py-16 text-[#FBF8F0] sm:px-6 lg:px-8" id="schedule">
         <div className="mx-auto max-w-6xl">
-          <SectionHeader eyebrow={t.scheduleEyebrow} title={t.scheduleTitle}>
-            <p className="text-[#FBF8F0]/72">{t.scheduleIntro}</p>
+          <SectionHeader
+            eyebrow={localized(content.schedule.eyebrow, t.scheduleEyebrow)}
+            title={localized(content.schedule.title, t.scheduleTitle)}
+          >
+            <p className="text-[#FBF8F0]/72">{localized(content.schedule.intro, t.scheduleIntro)}</p>
           </SectionHeader>
           <div className="mx-auto max-w-3xl">
-            {t.schedule.map((item, index) => (
-              <article className="relative grid grid-cols-[5rem_1fr] gap-5 pb-9" key={`${item.time}-${item.title}`}>
-                {index !== t.schedule.length - 1 ? (
+            {scheduleItems.map((item, index) => (
+              <article className="relative grid grid-cols-[5rem_1fr] gap-5 pb-9" key={item.id}>
+                {index !== scheduleItems.length - 1 ? (
                   <div className="absolute bottom-0 left-[5.45rem] top-8 w-px bg-[#D6C8A5]/35" />
                 ) : null}
                 <time className="pt-1 text-lg font-bold text-[#D6C8A5]">{item.time}</time>
                 <div className="relative rounded border border-white/12 bg-white/[0.04] p-5">
                   <span className="absolute -left-[1.1rem] top-7 h-3 w-3 rounded-full bg-[#D6C8A5]" />
-                  <h3 className="luxury-heading text-lg font-semibold">{item.title}</h3>
-                  <p className="mt-1 text-[#FBF8F0]/70">{item.detail}</p>
+                  <h3 className="luxury-heading text-lg font-semibold">{localized(item.title, item.id)}</h3>
+                  <p className="mt-1 text-[#FBF8F0]/70">{localized(item.detail, "")}</p>
                 </div>
               </article>
             ))}
@@ -574,13 +591,13 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
         <div className="mx-auto max-w-7xl">
           <div className="mb-10 grid gap-5 md:grid-cols-[0.85fr_1.15fr] md:items-end">
             <div>
-              <SectionLabel>{t.galleryEyebrow}</SectionLabel>
+              <SectionLabel>{localized(content.gallery.eyebrow, t.galleryEyebrow)}</SectionLabel>
               <h2 className="luxury-heading max-w-2xl text-3xl font-semibold leading-tight text-[#0A1F44] md:text-4xl">
-                {t.galleryTitle}
+                {localized(content.gallery.title, t.galleryTitle)}
               </h2>
             </div>
             <p className="max-w-2xl text-base leading-7 text-[#0A1F44]/68 md:justify-self-end md:text-lg">
-              {t.galleryIntro}
+              {localized(content.gallery.intro, t.galleryIntro)}
             </p>
           </div>
 
@@ -632,11 +649,11 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
                 href="/gallery"
               >
                 <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D6C8A5]">
-                  {t.galleryAlbumLabel}
+                  {localized(content.gallery.albumLabel, t.galleryAlbumLabel)}
                 </span>
                 <span className="mt-8 flex items-end justify-between gap-4">
                   <span className="max-w-[12rem] text-lg font-semibold leading-7">
-                    {t.galleryCta}
+                    {localized(content.gallery.cta, t.galleryCta)}
                   </span>
                   <span
                     aria-hidden="true"
@@ -654,37 +671,37 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
       <section className="px-4 py-16 sm:px-6 lg:px-8" id="location">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
           <div>
-            <SectionLabel>{t.locationEyebrow}</SectionLabel>
+            <SectionLabel>{localized(content.location.eyebrow, t.locationEyebrow)}</SectionLabel>
             <h2 className="luxury-heading text-3xl font-semibold leading-tight md:text-4xl">
-              Pearl Wedding Avenue
+              {localized(content.location.title, "Pearl Wedding Avenue")}
             </h2>
             <p className="mt-5 text-lg leading-8 text-[#0A1F44]/72">
-              {t.locationIntro}
+              {localized(content.location.intro, t.locationIntro)}
             </p>
             <div className="mt-8 space-y-4 text-[#0A1F44]/78">
               <p className="flex gap-3">
                 <MapPin aria-hidden="true" className="mt-1 shrink-0 text-[#7C5C3B]" size={20} />
-                <span>{t.locationAddress}</span>
+                <span>{localized(content.location.address, t.locationAddress)}</span>
               </p>
               <p className="flex gap-3">
                 <Check aria-hidden="true" className="mt-1 shrink-0 text-[#3E4D3A]" size={20} />
-                <span>{t.parkingNote}</span>
+                <span>{localized(content.location.parkingNote, t.parkingNote)}</span>
               </p>
             </div>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
                 className="inline-flex min-h-12 items-center justify-center rounded bg-[#0A1F44] px-5 text-sm font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:bg-[#7C5C3B]"
-                href="https://maps.app.goo.gl/XwnnwTVqNXy3SNzSA"
+                href={content.location.mapsUrl}
                 rel="noreferrer"
                 target="_blank"
               >
-                {t.googleMaps}
+                {localized(content.location.mapsButton, t.googleMaps)}
               </a>
               <a
                 className="inline-flex min-h-12 items-center justify-center rounded border border-[#0A1F44]/20 px-5 text-sm font-bold uppercase tracking-[0.12em] text-[#0A1F44] transition hover:border-[#7C5C3B] hover:text-[#7C5C3B]"
                 href="#contact"
               >
-                {t.contactOrganizer}
+                {localized(content.location.contactButton, t.contactOrganizer)}
               </a>
             </div>
           </div>
@@ -694,23 +711,23 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
               className="h-full min-h-[22rem] w-full"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              src="https://www.google.com/maps?q=Pearl%20Wedding%20Avenue%20Borommaratchachonnani&output=embed"
+              src={content.location.mapsEmbedUrl}
               title="Pearl Wedding Avenue map"
             />
           </div>
         </div>
         <div className="mx-auto mt-10 max-w-7xl rounded border border-[#0A1F44]/10 bg-white/65 p-5 shadow-[0_18px_60px_rgba(10,31,68,0.08)] sm:p-7">
           <h3 className="mb-5 text-sm font-bold uppercase tracking-[0.18em] text-[#7C5C3B]">
-            {t.transportTitle}
+            {localized(content.location.transportTitle, t.transportTitle)}
           </h3>
           <div className="grid gap-6 lg:grid-cols-2">
-            {t.transportSections.map((section) => (
-              <article key={section.title}>
-                <h4 className="text-lg font-semibold text-[#0A1F44]">{section.title}</h4>
+            {transportSections.map((section) => (
+              <article key={section.id}>
+                <h4 className="text-lg font-semibold text-[#0A1F44]">{localized(section.title, section.id)}</h4>
                 <ul className="mt-4 space-y-3 text-sm leading-6 text-[#0A1F44]/72">
-                  {section.items.map((item) => (
-                    <li className="border-l border-[#D6C8A5] pl-4" key={item}>
-                      {item}
+                  {section.items.map((item, index) => (
+                    <li className="border-l border-[#D6C8A5] pl-4" key={`${section.id}-${index}`}>
+                      {localized(item, "")}
                     </li>
                   ))}
                 </ul>
@@ -724,17 +741,17 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
             <div>
-              <SectionLabel>{t.dressEyebrow}</SectionLabel>
+              <SectionLabel>{localized(content.dressCode.eyebrow, t.dressEyebrow)}</SectionLabel>
               <h2 className="luxury-heading text-3xl font-semibold leading-tight text-[#0A1F44] md:text-5xl">
-                {t.dressTitle}
+                {localized(content.dressCode.title, t.dressTitle)}
               </h2>
               <p className="mt-5 max-w-xl text-lg leading-8 text-[#0A1F44]/72">
-                {t.dressIntro}
+                {localized(content.dressCode.intro, t.dressIntro)}
               </p>
               <div className="mt-8 grid gap-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#0A1F44]/62 sm:grid-cols-3 lg:max-w-xl">
-                {t.dressKeywords.map((keyword) => (
-                  <p className="border-l border-[#7C5C3B] pl-4" key={keyword}>
-                    {keyword}
+                {content.dressCode.keywords.map((keyword, index) => (
+                  <p className="border-l border-[#7C5C3B] pl-4" key={`dress-keyword-${index}`}>
+                    {localized(keyword, "")}
                   </p>
                 ))}
               </div>
@@ -743,11 +760,11 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
             <div className="rounded border border-[#0A1F44]/10 bg-[#FBF8F0] p-5 sm:p-6">
               <div className="mb-5 flex items-end justify-between gap-4">
                 <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#0A1F44]/60">
-                  {t.paletteTitle}
+                  {localized(content.dressCode.paletteTitle, t.paletteTitle)}
                 </h3>
               </div>
               <div className="grid gap-3 sm:grid-cols-5">
-                {dressColors.map((color) => (
+                {content.dressCode.colors.map((color) => (
                   <div
                     className="grid grid-cols-[4.5rem_1fr] items-center gap-3 sm:block sm:space-y-3"
                     key={color.name}
@@ -774,12 +791,12 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
       <section className="px-4 py-16 sm:px-6 lg:px-8" id="rsvp">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
           <div>
-            <SectionLabel>{t.rsvpEyebrow}</SectionLabel>
+            <SectionLabel>{localized(content.rsvp.eyebrow, t.rsvpEyebrow)}</SectionLabel>
             <h2 className="luxury-heading text-3xl font-semibold leading-tight md:text-4xl">
-              {t.rsvpTitle}
+              {localized(content.rsvp.title, t.rsvpTitle)}
             </h2>
             <p className="mt-5 text-lg leading-8 text-[#0A1F44]/72">
-              {t.rsvpIntro}
+              {localized(content.rsvp.intro, t.rsvpIntro)}
             </p>
           </div>
           <RsvpForm language={language} />
@@ -788,15 +805,15 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
 
       <section className="bg-white/55 px-4 py-16 sm:px-6 lg:px-8" id="faq">
         <div className="mx-auto max-w-5xl">
-          <SectionHeader eyebrow={t.faqEyebrow} title={t.faqTitle} />
+          <SectionHeader eyebrow={localized(content.faq.eyebrow, t.faqEyebrow)} title={localized(content.faq.title, t.faqTitle)} />
           <div className="grid gap-4 md:grid-cols-2">
-            {t.faqs.map((item) => (
+            {faqItems.map((item) => (
               <article
                 className="rounded border border-[#0A1F44]/10 bg-[#FBF8F0] p-5 shadow-[0_16px_50px_rgba(10,31,68,0.06)]"
-                key={item.question}
+                key={item.id}
               >
-                <h3 className="text-base font-semibold text-[#0A1F44]">{item.question}</h3>
-                <p className="mt-3 text-sm leading-6 text-[#0A1F44]/70">{item.answer}</p>
+                <h3 className="text-base font-semibold text-[#0A1F44]">{localized(item.question, item.id)}</h3>
+                <p className="mt-3 text-sm leading-6 text-[#0A1F44]/70">{localized(item.answer, "")}</p>
               </article>
             ))}
           </div>
@@ -805,37 +822,39 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
 
       <section className="bg-[#3E4D3A] px-4 py-16 text-[#FBF8F0] sm:px-6 lg:px-8" id="contact">
         <div className="mx-auto max-w-5xl text-center">
-          <SectionLabel>{t.contactEyebrow}</SectionLabel>
-          <h2 className="luxury-heading text-3xl font-semibold md:text-4xl">{t.contactTitle}</h2>
+          <SectionLabel>{localized(content.contact.eyebrow, t.contactEyebrow)}</SectionLabel>
+          <h2 className="luxury-heading text-3xl font-semibold md:text-4xl">
+            {localized(content.contact.title, t.contactTitle)}
+          </h2>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#FBF8F0]/75">
-            {t.contactIntro}
+            {localized(content.contact.intro, t.contactIntro)}
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <a
               aria-label="Add LINE Official @990yroaq as a friend"
               className="inline-flex min-h-14 items-center justify-center gap-3 rounded border border-white/18 bg-white/8 px-5 font-semibold transition hover:bg-white/14"
-              href="https://line.me/R/ti/p/%40990yroaq"
+              href={content.contact.lineUrl}
               rel="noreferrer"
               target="_blank"
             >
               <MessageCircle aria-hidden="true" size={20} />
-              {t.contactLineLabel}
+              {localized(content.contact.lineLabel, t.contactLineLabel)}
             </a>
             <a
               className="inline-flex min-h-14 items-center justify-center gap-3 rounded border border-white/18 bg-white/8 px-5 font-semibold transition hover:bg-white/14"
-              href="tel:+66996567965"
+              href={content.contact.phoneHref}
             >
               <Phone aria-hidden="true" size={20} />
-              Phone: 099-656-7965
+              {localized(content.contact.phoneLabel, "Phone: 099-656-7965")}
             </a>
           </div>
         </div>
       </section>
 
       <footer className="bg-[#0A1F44] px-4 py-10 text-center text-[#FBF8F0] sm:px-6 lg:px-8">
-        <p className="script-display text-4xl font-medium">Jajah & Smart</p>
+        <p className="script-display text-4xl font-medium">{content.footer.coupleName}</p>
         <p className="mt-2 text-sm uppercase tracking-[0.22em] text-[#D6C8A5]">
-          1 November 2026 · Pearl Wedding Avenue
+          {localized(content.footer.details, "1 November 2026 · Pearl Wedding Avenue")}
         </p>
       </footer>
 
@@ -843,7 +862,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
         aria-label="Quick actions"
         className="fixed inset-x-3 bottom-3 z-50 grid grid-cols-4 overflow-hidden rounded border border-[#0A1F44]/10 bg-[#FBF8F0]/95 text-[#0A1F44] shadow-[0_18px_50px_rgba(10,31,68,0.22)] backdrop-blur md:hidden"
       >
-        {t.bottomNav.map((item) => {
+        {bottomNavItems.map((item) => {
           const Icon = item.icon;
           return (
             <a
@@ -852,7 +871,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
               key={item.href}
             >
               <Icon aria-hidden="true" size={17} />
-              {item.label}
+              {localized(item.label, item.id)}
             </a>
           );
         })}

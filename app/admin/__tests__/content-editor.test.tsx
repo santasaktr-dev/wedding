@@ -48,6 +48,34 @@ describe("SectionEditor", () => {
     expect(await screen.findByText(/draft saved/i)).toBeInTheDocument();
   });
 
+  it("edits navigation labels and saves the draft", async () => {
+    editorMocks.saveDraftContent.mockResolvedValue({ ok: true });
+    renderEditor();
+
+    fireEvent.click(screen.getByRole("button", { name: /Navigation/i }));
+    fireEvent.change(screen.getByLabelText(/event-info label/i), {
+      target: { value: "Details" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /save draft/i }));
+
+    await waitFor(() => {
+      expect(editorMocks.saveDraftContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          navigation: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                id: "event-info",
+                label: expect.objectContaining({
+                  en: "Details",
+                }),
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+  });
+
   it("switches to Thai content and edits RSVP fields section-by-section", async () => {
     editorMocks.saveDraftContent.mockResolvedValue({ ok: true });
     renderEditor();
