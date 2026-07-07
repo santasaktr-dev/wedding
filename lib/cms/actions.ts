@@ -250,6 +250,48 @@ export async function saveGalleryImageOrder(albumId: string, orderedImageIds: st
   return { ok: true };
 }
 
+export async function deleteGalleryImage(imageId: string): Promise<CmsActionResult> {
+  if (!getSupabaseConfig().isConfigured) {
+    return { ok: true };
+  }
+
+  if (!imageId) {
+    return { ok: false, message: "Select an image to delete." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const imageResult = await supabase
+    .from("gallery_images")
+    .select("id, storage_path")
+    .eq("id", imageId)
+    .maybeSingle();
+
+  if (imageResult.error) {
+    return { ok: false, message: imageResult.error.message };
+  }
+
+  if (!imageResult.data?.storage_path) {
+    return { ok: false, message: "Image not found." };
+  }
+
+  const storageResult = await supabase.storage.from("wedding-gallery").remove([imageResult.data.storage_path]);
+
+  if (storageResult.error) {
+    return { ok: false, message: storageResult.error.message };
+  }
+
+  const deleteResult = await supabase.from("gallery_images").delete().eq("id", imageId);
+
+  if (deleteResult.error) {
+    return { ok: false, message: deleteResult.error.message };
+  }
+
+  revalidatePath("/admin/gallery");
+  revalidatePath("/gallery");
+
+  return { ok: true };
+}
+
 export async function publishDraftContent(): Promise<CmsActionResult> {
   if (!getSupabaseConfig().isConfigured) {
     revalidatePath("/");

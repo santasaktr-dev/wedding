@@ -45,4 +45,10 @@ describe("GalleryManager", () => {
     const captions = screen.getAllByText(/classic portrait|second image/i);
     expect(captions.map((caption) => caption.textContent)).toEqual(["Second Image", "Classic Portrait"]);
   });
+
+  it("renders delete controls for uploaded images", () => {
+    render(<GalleryManager initialAlbums={fallbackCmsSnapshot.albums} />);
+
+    expect(screen.getByRole("button", { name: /delete classic portrait/i })).toBeInTheDocument();
+  });
 });

@@ -1,11 +1,11 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import { saveGalleryImageOrder, uploadGalleryImagesAction } from "../../../lib/cms/actions";
+import { deleteGalleryImage, saveGalleryImageOrder, uploadGalleryImagesAction } from "../../../lib/cms/actions";
 import { moveItem, normalizeSortOrder } from "../../../lib/cms/reorder";
-import type { GalleryAlbum } from "../../../lib/cms/types";
+import type { GalleryAlbum, GalleryImage } from "../../../lib/cms/types";
 import { getLocalizedText } from "../../../lib/cms/validation";
 import { ImageGrid } from "./ImageGrid";
 import { StatusBanner } from "./StatusBanner";
@@ -18,6 +18,8 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
   const [albums, setAlbums] = useState(initialAlbums);
   const [selectedAlbumId, setSelectedAlbumId] = useState(initialAlbums[0]?.id ?? "");
   const [uploadState, uploadFormAction, isUploadPending] = useActionState(uploadGalleryImagesAction, { ok: false });
+  const [deleteState, setDeleteState] = useState<{ ok: boolean; message?: string } | null>(null);
+  const [isDeletePending, startDeleteTransition] = useTransition();
   const router = useRouter();
   const selectedAlbum = useMemo(
     () => albums.find((album) => album.id === selectedAlbumId) ?? albums[0],
@@ -43,6 +45,33 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
       selectedAlbum.id,
       reordered.map((image) => image.id),
     );
+  };
+
+  const deleteImage = (image: GalleryImage) => {
+    const caption = getLocalizedText(image.caption, "en") || getLocalizedText(image.alt, "en") || "this image";
+
+    if (!window.confirm(`Delete ${caption}?`)) {
+      return;
+    }
+
+    startDeleteTransition(async () => {
+      const result = await deleteGalleryImage(image.id);
+
+      if (!result.ok) {
+        setDeleteState(result);
+        return;
+      }
+
+      setAlbums((current) =>
+        current.map((album) =>
+          album.id === image.albumId
+            ? { ...album, images: album.images.filter((albumImage) => albumImage.id !== image.id) }
+            : album,
+        ),
+      );
+      setDeleteState({ ok: true, message: "Deleted selected photo." });
+      router.refresh();
+    });
   };
 
   return (
@@ -108,6 +137,12 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
               </div>
             ) : null}
 
+            {deleteState?.message ? (
+              <div className="mb-5">
+                <StatusBanner tone={deleteState.ok ? "success" : "error"}>{deleteState.message}</StatusBanner>
+              </div>
+            ) : null}
+
             <form action={uploadFormAction} className="mb-5 border border-dashed border-[#d6c8a5] bg-white p-4">
               <input name="albumId" type="hidden" value={selectedAlbum.id} />
               <input name="albumSlug" type="hidden" value={selectedAlbum.slug} />
@@ -120,6 +155,9 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
                   name="images"
                   type="file"
                 />
+                <span className="mt-2 block text-xs leading-5 text-[#3e4d3a]">
+                  You can select multiple photos. Each photo can be up to 30MB, with about 100MB per upload.
+                </span>
               </label>
               <button
                 className="mt-3 min-h-10 bg-[#0a1f44] px-4 text-sm font-semibold text-[#fbf8f0] transition hover:bg-[#142f5f]"
@@ -130,7 +168,12 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
               </button>
             </form>
 
-            <ImageGrid images={selectedAlbum.images} onMove={moveImage} />
+            <ImageGrid
+              images={selectedAlbum.images}
+              isDeleting={isDeletePending}
+              onDelete={deleteImage}
+              onMove={moveImage}
+            />
           </>
         ) : (
           <StatusBanner tone="info">No albums yet.</StatusBanner>

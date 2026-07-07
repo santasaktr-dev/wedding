@@ -6,6 +6,7 @@ import {
   publishDraftContent,
   saveDraftContent,
   saveGalleryImageOrder,
+  deleteGalleryImage,
   uploadGalleryImages,
   uploadGalleryImagesAction,
 } from "../actions";
@@ -39,6 +40,7 @@ function createQueryResult<T>(result: T) {
     single: vi.fn(() => promise),
     insert: vi.fn(() => query),
     update: vi.fn(() => query),
+    delete: vi.fn(() => query),
     upsert: vi.fn(() => promise),
     then: promise.then.bind(promise),
   };
@@ -271,6 +273,48 @@ describe("cms draft actions", () => {
     expect(updateQuery.update).toHaveBeenNthCalledWith(1, { sort_order: 0 });
     expect(updateQuery.update).toHaveBeenNthCalledWith(2, { sort_order: 1 });
     expect(updateQuery.eq).toHaveBeenCalledWith("album_id", "album-id");
+    expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/admin/gallery");
+    expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/gallery");
+  });
+
+  it("deletes a gallery image row and storage object when Supabase is configured", async () => {
+    actionMocks.getSupabaseConfig.mockReturnValue({
+      url: "https://example.supabase.co",
+      anonKey: "anon-key",
+      isConfigured: true,
+    });
+
+    const imageQuery = createQueryResult({
+      data: {
+        id: "image-id",
+        storage_path: "highlights/photo.jpg",
+      },
+      error: null,
+    });
+    const deleteQuery = createQueryResult({ data: null, error: null });
+    const remove = vi.fn().mockResolvedValue({ error: null });
+    const from = vi.fn((table: string) => {
+      if (table === "gallery_images") {
+        return imageQuery;
+      }
+      throw new Error(`Unexpected table: ${table}`);
+    });
+
+    imageQuery.delete.mockReturnValue(deleteQuery);
+    actionMocks.createSupabaseServerClient.mockResolvedValue({
+      from,
+      storage: {
+        from: vi.fn(() => ({ remove })),
+      },
+    });
+
+    await expect(deleteGalleryImage("image-id")).resolves.toEqual({ ok: true });
+
+    expect(imageQuery.select).toHaveBeenCalledWith("id, storage_path");
+    expect(imageQuery.eq).toHaveBeenCalledWith("id", "image-id");
+    expect(remove).toHaveBeenCalledWith(["highlights/photo.jpg"]);
+    expect(imageQuery.delete).toHaveBeenCalled();
+    expect(deleteQuery.eq).toHaveBeenCalledWith("id", "image-id");
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/admin/gallery");
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/gallery");
   });
