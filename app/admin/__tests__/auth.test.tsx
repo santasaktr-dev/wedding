@@ -120,11 +120,11 @@ describe("Admin route redirects", () => {
 });
 
 describe("ContentPage", () => {
-  it("renders a protected content placeholder", () => {
-    render(<ContentPage />);
+  it("renders the protected content editor", async () => {
+    render(await ContentPage());
 
-    expect(screen.getByRole("heading", { name: /content/i })).toBeInTheDocument();
-    expect(screen.getByText(/content editor comes next/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /edit by section/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /save draft/i })).toBeInTheDocument();
   });
 });
 
