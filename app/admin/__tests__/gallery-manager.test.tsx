@@ -51,4 +51,10 @@ describe("GalleryManager", () => {
 
     expect(screen.getByRole("button", { name: /delete classic portrait/i })).toBeInTheDocument();
   });
+
+  it("shows admin gallery images without cropping them", () => {
+    render(<GalleryManager initialAlbums={fallbackCmsSnapshot.albums} />);
+
+    expect(screen.getByRole("img", { name: /prewedding portrait/i })).toHaveClass("object-contain");
+  });
 });

@@ -30,7 +30,7 @@ export function ImageGrid({ images, isDeleting = false, onDelete, onMove }: Imag
         return (
           <article className="border border-[#d6c8a5] bg-white p-3" key={image.id}>
             <div className="relative aspect-[4/5] overflow-hidden bg-[#0a1f44]/10">
-              <Image alt={alt} className="object-cover" fill sizes="(min-width: 1024px) 25vw, 50vw" src={image.publicUrl} />
+              <Image alt={alt} className="object-contain" fill sizes="(min-width: 1024px) 25vw, 50vw" src={image.publicUrl} />
             </div>
             <div className="mt-3">
               <p className="text-sm font-semibold text-[#0a1f44]">{caption}</p>
