@@ -1,9 +1,21 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { fallbackCmsSnapshot } from "../../../lib/cms/fallback";
 import type { GalleryAlbum } from "../../../lib/cms/types";
 import { GalleryManager } from "../components/GalleryManager";
+
+const actionMocks = vi.hoisted(() => ({
+  deleteGalleryImage: vi.fn(async () => ({ ok: true })),
+  saveGalleryImageOrder: vi.fn(async () => ({ ok: true })),
+  uploadGalleryImages: vi.fn(async () => ({ ok: true, uploadedCount: 2 })),
+}));
+
+vi.mock("../../../lib/cms/actions", () => ({
+  deleteGalleryImage: actionMocks.deleteGalleryImage,
+  saveGalleryImageOrder: actionMocks.saveGalleryImageOrder,
+  uploadGalleryImages: actionMocks.uploadGalleryImages,
+}));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -14,6 +26,9 @@ vi.mock("next/navigation", () => ({
 describe("GalleryManager", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    actionMocks.deleteGalleryImage.mockClear();
+    actionMocks.saveGalleryImageOrder.mockClear();
+    actionMocks.uploadGalleryImages.mockClear();
   });
 
   it("renders albums and selects an album", () => {
@@ -62,10 +77,10 @@ describe("GalleryManager", () => {
     expect(screen.getByRole("img", { name: /prewedding portrait/i })).toHaveClass("object-contain");
   });
 
-  it("submits the upload form when photos are selected", () => {
-    const requestSubmit = vi.spyOn(HTMLFormElement.prototype, "requestSubmit").mockImplementation(() => {});
-
+  it("uploads every selected photo immediately without a manual upload button", async () => {
     render(<GalleryManager initialAlbums={fallbackCmsSnapshot.albums} />);
+
+    expect(screen.queryByRole("button", { name: /upload now/i })).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/upload photos/i), {
       target: {
@@ -73,6 +88,11 @@ describe("GalleryManager", () => {
       },
     });
 
-    expect(requestSubmit).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(actionMocks.uploadGalleryImages).toHaveBeenCalledTimes(1));
+
+    const formData = actionMocks.uploadGalleryImages.mock.calls[0][0] as FormData;
+    expect(formData.get("albumId")).toBe(fallbackCmsSnapshot.albums[0].id);
+    expect(formData.get("albumSlug")).toBe(fallbackCmsSnapshot.albums[0].slug);
+    expect(formData.getAll("images").map((file) => (file as File).name)).toEqual(["first.jpg", "second.jpg"]);
   });
 });
