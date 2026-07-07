@@ -1,11 +1,11 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import { saveGalleryImageOrder, uploadGalleryImagesAction } from "../../../lib/cms/actions";
+import { deleteGalleryImage, saveGalleryImageOrder, uploadGalleryImages } from "../../../lib/cms/actions";
 import { moveItem, normalizeSortOrder } from "../../../lib/cms/reorder";
-import type { GalleryAlbum } from "../../../lib/cms/types";
+import type { GalleryAlbum, GalleryImage } from "../../../lib/cms/types";
 import { getLocalizedText } from "../../../lib/cms/validation";
 import { ImageGrid } from "./ImageGrid";
 import { StatusBanner } from "./StatusBanner";
@@ -17,18 +17,15 @@ type GalleryManagerProps = {
 export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
   const [albums, setAlbums] = useState(initialAlbums);
   const [selectedAlbumId, setSelectedAlbumId] = useState(initialAlbums[0]?.id ?? "");
-  const [uploadState, uploadFormAction, isUploadPending] = useActionState(uploadGalleryImagesAction, { ok: false });
+  const [uploadState, setUploadState] = useState<{ ok: boolean; message?: string } | null>(null);
+  const [deleteState, setDeleteState] = useState<{ ok: boolean; message?: string } | null>(null);
+  const [isUploadPending, startUploadTransition] = useTransition();
+  const [isDeletePending, startDeleteTransition] = useTransition();
   const router = useRouter();
   const selectedAlbum = useMemo(
     () => albums.find((album) => album.id === selectedAlbumId) ?? albums[0],
     [albums, selectedAlbumId],
   );
-
-  useEffect(() => {
-    if (uploadState.ok) {
-      router.refresh();
-    }
-  }, [router, uploadState.ok]);
 
   const moveImage = (fromIndex: number, toIndex: number) => {
     if (!selectedAlbum) {
@@ -43,6 +40,60 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
       selectedAlbum.id,
       reordered.map((image) => image.id),
     );
+  };
+
+  const uploadImages = (files: FileList | null) => {
+    if (!selectedAlbum || !files || files.length === 0) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.set("albumId", selectedAlbum.id);
+    formData.set("albumSlug", selectedAlbum.slug);
+    Array.from(files).forEach((file) => formData.append("images", file));
+
+    startUploadTransition(async () => {
+      const result = await uploadGalleryImages(formData);
+
+      if (!result.ok) {
+        setUploadState(result);
+        return;
+      }
+
+      const uploadedCount = result.uploadedCount ?? files.length;
+      setUploadState({
+        ok: true,
+        message: uploadedCount === 1 ? "Uploaded 1 photo." : `Uploaded ${uploadedCount} photos.`,
+      });
+      router.refresh();
+    });
+  };
+
+  const deleteImage = (image: GalleryImage) => {
+    const caption = getLocalizedText(image.caption, "en") || getLocalizedText(image.alt, "en") || "this image";
+
+    if (!window.confirm(`Delete ${caption}?`)) {
+      return;
+    }
+
+    startDeleteTransition(async () => {
+      const result = await deleteGalleryImage(image.id);
+
+      if (!result.ok) {
+        setDeleteState(result);
+        return;
+      }
+
+      setAlbums((current) =>
+        current.map((album) =>
+          album.id === image.albumId
+            ? { ...album, images: album.images.filter((albumImage) => albumImage.id !== image.id) }
+            : album,
+        ),
+      );
+      setDeleteState({ ok: true, message: "Deleted selected photo." });
+      router.refresh();
+    });
   };
 
   return (
@@ -102,35 +153,47 @@ export function GalleryManager({ initialAlbums }: GalleryManagerProps) {
               </StatusBanner>
             </div>
 
-            {uploadState.message ? (
+            {uploadState?.message ? (
               <div className="mb-5">
                 <StatusBanner tone={uploadState.ok ? "success" : "error"}>{uploadState.message}</StatusBanner>
               </div>
             ) : null}
 
-            <form action={uploadFormAction} className="mb-5 border border-dashed border-[#d6c8a5] bg-white p-4">
-              <input name="albumId" type="hidden" value={selectedAlbum.id} />
-              <input name="albumSlug" type="hidden" value={selectedAlbum.slug} />
+            {deleteState?.message ? (
+              <div className="mb-5">
+                <StatusBanner tone={deleteState.ok ? "success" : "error"}>{deleteState.message}</StatusBanner>
+              </div>
+            ) : null}
+
+            <div className="mb-5 border border-dashed border-[#d6c8a5] bg-white p-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-[#0a1f44]">Upload photos</span>
                 <input
                   accept="image/*"
                   className="block w-full text-sm text-[#3e4d3a] file:mr-4 file:border-0 file:bg-[#0a1f44] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#fbf8f0]"
+                  disabled={isUploadPending}
                   multiple
                   name="images"
+                  onChange={(event) => {
+                    uploadImages(event.currentTarget.files);
+                    event.currentTarget.value = "";
+                  }}
                   type="file"
                 />
+                <span className="mt-2 block text-xs leading-5 text-[#3e4d3a]">
+                  {isUploadPending
+                    ? "Uploading selected photos..."
+                    : "Select one or more photos to upload automatically. Each photo can be up to 30MB, with about 100MB per upload."}
+                </span>
               </label>
-              <button
-                className="mt-3 min-h-10 bg-[#0a1f44] px-4 text-sm font-semibold text-[#fbf8f0] transition hover:bg-[#142f5f]"
-                disabled={isUploadPending}
-                type="submit"
-              >
-                {isUploadPending ? "Uploading..." : "Upload selected photos"}
-              </button>
-            </form>
+            </div>
 
-            <ImageGrid images={selectedAlbum.images} onMove={moveImage} />
+            <ImageGrid
+              images={selectedAlbum.images}
+              isDeleting={isDeletePending}
+              onDelete={deleteImage}
+              onMove={moveImage}
+            />
           </>
         ) : (
           <StatusBanner tone="info">No albums yet.</StatusBanner>

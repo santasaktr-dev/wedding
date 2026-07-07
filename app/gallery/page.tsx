@@ -1,4 +1,4 @@
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
 import { getPublicGalleryAlbums } from "../../lib/cms/server";
@@ -60,28 +60,28 @@ export default async function GalleryPage() {
                   </p>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div
+                  className="columns-1 gap-4 sm:columns-2 lg:columns-3"
+                  data-testid={`gallery-masonry-${album.slug}`}
+                >
                   {album.images.map((image, index) => (
                     <figure
-                      className={`group overflow-hidden rounded border border-[#0A1F44]/10 bg-[#0A1F44] shadow-[0_18px_50px_rgba(10,31,68,0.12)] ${
-                        index === 0 ? "lg:col-span-2" : ""
-                      }`}
+                      className="mb-4 break-inside-avoid overflow-hidden rounded border border-[#0A1F44]/10 bg-white shadow-[0_18px_50px_rgba(10,31,68,0.1)]"
                       key={image.id}
                     >
-                      <div className={index === 0 ? "relative aspect-[16/11]" : "relative aspect-[4/5]"}>
-                        <Image
+                      <div className="bg-[#0A1F44]/8">
+                        <img
                           alt={image.alt.en}
-                          className="object-cover opacity-95 transition duration-500 group-hover:scale-[1.03]"
-                          fill
-                          sizes={index === 0 ? "(min-width: 1024px) 50vw, 100vw" : "(min-width: 1024px) 25vw, 50vw"}
+                          className="h-auto w-full transition duration-500 group-hover:scale-[1.015]"
+                          loading={index < 4 ? "eager" : "lazy"}
                           src={image.publicUrl}
                         />
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0A1F44]/85 to-transparent p-4 pt-14">
-                          <figcaption className="luxury-heading text-xs font-semibold text-[#D6C8A5]">
-                            {image.caption.en}
-                          </figcaption>
-                        </div>
                       </div>
+                      {image.caption.en ? (
+                        <figcaption className="luxury-heading border-t border-[#0A1F44]/10 bg-[#FBF8F0] px-4 py-3 text-xs font-semibold text-[#7C5C3B]">
+                          {image.caption.en}
+                        </figcaption>
+                      ) : null}
                     </figure>
                   ))}
                 </div>

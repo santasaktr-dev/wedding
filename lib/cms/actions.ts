@@ -20,6 +20,9 @@ type CmsActionResult = {
   ok: boolean;
   message?: string;
 };
+type UploadGalleryImagesResult = CmsActionResult & {
+  uploadedCount?: number;
+};
 
 let fallbackDraftContent: WeddingContent = structuredClone(fallbackCmsSnapshot.content) as WeddingContent;
 
@@ -127,7 +130,7 @@ export async function saveDraftContent(content: WeddingContent): Promise<CmsActi
   }
 }
 
-export async function uploadGalleryImages(formData: FormData): Promise<CmsActionResult> {
+export async function uploadGalleryImages(formData: FormData): Promise<UploadGalleryImagesResult> {
   if (!getSupabaseConfig().isConfigured) {
     return { ok: false, message: "Supabase is not configured." };
   }
@@ -201,7 +204,7 @@ export async function uploadGalleryImages(formData: FormData): Promise<CmsAction
   revalidatePath("/admin/gallery");
   revalidatePath("/gallery");
 
-  return { ok: true };
+  return { ok: true, uploadedCount: uploadedRows.length };
 }
 
 export async function uploadGalleryImagesAction(
@@ -214,7 +217,12 @@ export async function uploadGalleryImagesAction(
     return result;
   }
 
-  return { ok: true, message: "Uploaded selected photos." };
+  const uploadedCount = result.uploadedCount ?? 0;
+
+  return {
+    ok: true,
+    message: uploadedCount === 1 ? "Uploaded 1 photo." : `Uploaded ${uploadedCount} photos.`,
+  };
 }
 
 export async function uploadGalleryImagesFromForm(formData: FormData): Promise<void> {
@@ -242,6 +250,48 @@ export async function saveGalleryImageOrder(albumId: string, orderedImageIds: st
     if (updateResult.error) {
       return { ok: false, message: updateResult.error.message };
     }
+  }
+
+  revalidatePath("/admin/gallery");
+  revalidatePath("/gallery");
+
+  return { ok: true };
+}
+
+export async function deleteGalleryImage(imageId: string): Promise<CmsActionResult> {
+  if (!getSupabaseConfig().isConfigured) {
+    return { ok: true };
+  }
+
+  if (!imageId) {
+    return { ok: false, message: "Select an image to delete." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const imageResult = await supabase
+    .from("gallery_images")
+    .select("id, storage_path")
+    .eq("id", imageId)
+    .maybeSingle();
+
+  if (imageResult.error) {
+    return { ok: false, message: imageResult.error.message };
+  }
+
+  if (!imageResult.data?.storage_path) {
+    return { ok: false, message: "Image not found." };
+  }
+
+  const storageResult = await supabase.storage.from("wedding-gallery").remove([imageResult.data.storage_path]);
+
+  if (storageResult.error) {
+    return { ok: false, message: storageResult.error.message };
+  }
+
+  const deleteResult = await supabase.from("gallery_images").delete().eq("id", imageId);
+
+  if (deleteResult.error) {
+    return { ok: false, message: deleteResult.error.message };
   }
 
   revalidatePath("/admin/gallery");
@@ -328,4 +378,14 @@ export async function publishDraftContent(): Promise<CmsActionResult> {
 
 export async function publishDraftContentFromForm(): Promise<void> {
   await publishDraftContent();
+}
+
+export async function publishDraftContentAction(): Promise<CmsActionResult> {
+  const result = await publishDraftContent();
+
+  if (!result.ok) {
+    return result;
+  }
+
+  return { ok: true, message: "Published draft changes." };
 }

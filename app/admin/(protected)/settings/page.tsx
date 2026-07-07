@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { publishDraftContentFromForm } from "../../../../lib/cms/actions";
+import { PublishSettings } from "../../components/PublishSettings";
 
 export default function SettingsPage() {
   return (
@@ -12,14 +12,7 @@ export default function SettingsPage() {
         guests.
       </p>
 
-      <form action={publishDraftContentFromForm} className="mt-6">
-        <button
-          className="min-h-12 bg-[#0a1f44] px-5 text-sm font-semibold text-[#fbf8f0] transition hover:bg-[#142f5f]"
-          type="submit"
-        >
-          Publish draft
-        </button>
-      </form>
+      <PublishSettings />
 
       <Link
         className="mt-5 inline-flex border border-[#d6c8a5] bg-white px-4 py-3 text-sm font-semibold text-[#0a1f44] transition hover:border-[#0a1f44]"

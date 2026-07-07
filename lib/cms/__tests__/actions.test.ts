@@ -6,8 +6,10 @@ import {
   publishDraftContent,
   saveDraftContent,
   saveGalleryImageOrder,
+  deleteGalleryImage,
   uploadGalleryImages,
   uploadGalleryImagesAction,
+  publishDraftContentAction,
 } from "../actions";
 
 const actionMocks = vi.hoisted(() => ({
@@ -39,6 +41,7 @@ function createQueryResult<T>(result: T) {
     single: vi.fn(() => promise),
     insert: vi.fn(() => query),
     update: vi.fn(() => query),
+    delete: vi.fn(() => query),
     upsert: vi.fn(() => promise),
     then: promise.then.bind(promise),
   };
@@ -233,16 +236,28 @@ describe("cms draft actions", () => {
     formData.set("albumId", "album-id");
     formData.set("albumSlug", "Highlights");
     formData.append("images", new File([new Uint8Array(11 * 1024 * 1024)], "Jajah & Smart.JPG", { type: "image/jpeg" }));
+    formData.append("images", new File(["image"], "Second.JPG", { type: "image/jpeg" }));
 
-    await expect(uploadGalleryImages(formData)).resolves.toEqual({ ok: true });
+    await expect(uploadGalleryImages(formData)).resolves.toEqual({ ok: true, uploadedCount: 2 });
 
     expect(storageFrom).toHaveBeenCalledWith("wedding-gallery");
-    expect(upload).toHaveBeenCalledWith(expect.stringMatching(/^highlights\/\d+-jajah-smart\.jpg$/), expect.any(File));
-    expect(imagesQuery.insert).toHaveBeenCalledWith([
+    expect(upload).toHaveBeenCalledTimes(2);
+    expect(upload).toHaveBeenNthCalledWith(1, expect.stringMatching(/^highlights\/\d+-jajah-smart\.jpg$/), expect.any(File));
+    expect(upload).toHaveBeenNthCalledWith(2, expect.stringMatching(/^highlights\/\d+-second\.jpg$/), expect.any(File));
+
+    const insertedRows = imagesQuery.insert.mock.calls[0][0];
+    expect(insertedRows).toHaveLength(2);
+    expect(insertedRows).toEqual([
       expect.objectContaining({
         album_id: "album-id",
         public_url: expect.stringMatching(/^https:\/\/cdn\.example\.com\/highlights\/\d+-jajah-smart\.jpg$/),
         sort_order: 0,
+        status: "draft",
+      }),
+      expect.objectContaining({
+        album_id: "album-id",
+        public_url: expect.stringMatching(/^https:\/\/cdn\.example\.com\/highlights\/\d+-second\.jpg$/),
+        sort_order: 1,
         status: "draft",
       }),
     ]);
@@ -275,6 +290,48 @@ describe("cms draft actions", () => {
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/gallery");
   });
 
+  it("deletes a gallery image row and storage object when Supabase is configured", async () => {
+    actionMocks.getSupabaseConfig.mockReturnValue({
+      url: "https://example.supabase.co",
+      anonKey: "anon-key",
+      isConfigured: true,
+    });
+
+    const imageQuery = createQueryResult({
+      data: {
+        id: "image-id",
+        storage_path: "highlights/photo.jpg",
+      },
+      error: null,
+    });
+    const deleteQuery = createQueryResult({ data: null, error: null });
+    const remove = vi.fn().mockResolvedValue({ error: null });
+    const from = vi.fn((table: string) => {
+      if (table === "gallery_images") {
+        return imageQuery;
+      }
+      throw new Error(`Unexpected table: ${table}`);
+    });
+
+    imageQuery.delete.mockReturnValue(deleteQuery);
+    actionMocks.createSupabaseServerClient.mockResolvedValue({
+      from,
+      storage: {
+        from: vi.fn(() => ({ remove })),
+      },
+    });
+
+    await expect(deleteGalleryImage("image-id")).resolves.toEqual({ ok: true });
+
+    expect(imageQuery.select).toHaveBeenCalledWith("id, storage_path");
+    expect(imageQuery.eq).toHaveBeenCalledWith("id", "image-id");
+    expect(remove).toHaveBeenCalledWith(["highlights/photo.jpg"]);
+    expect(imageQuery.delete).toHaveBeenCalled();
+    expect(deleteQuery.eq).toHaveBeenCalledWith("id", "image-id");
+    expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/admin/gallery");
+    expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/gallery");
+  });
+
   it("publishes locally when Supabase is not configured", async () => {
     await expect(publishDraftContent()).resolves.toEqual({ ok: true });
 
@@ -282,6 +339,13 @@ describe("cms draft actions", () => {
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/");
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/gallery");
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/admin/settings");
+  });
+
+  it("returns publish success to action-state forms", async () => {
+    await expect(publishDraftContentAction({ ok: false })).resolves.toEqual({
+      ok: true,
+      message: "Published draft changes.",
+    });
   });
 
   it("returns an error when no configured draft exists to publish", async () => {
