@@ -1,7 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import AdminPage from "../(protected)/page";
+import ContentPage from "../(protected)/content/page";
 import ProtectedAdminLayout from "../(protected)/layout";
+import { signInAdmin, signOutAdmin } from "../actions";
 import LoginPage from "../login/page";
 
 const adminMocks = vi.hoisted(() => ({
@@ -47,6 +50,20 @@ describe("LoginPage", () => {
     expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
   });
 
+  it("connects invalid login errors to the email and password fields", async () => {
+    render(await LoginPage({ searchParams: Promise.resolve({ error: "invalid" }) }));
+
+    const error = screen.getByRole("alert");
+    const email = screen.getByLabelText(/email/i);
+    const password = screen.getByLabelText(/password/i);
+
+    expect(error).toHaveTextContent(/invalid email or password/i);
+    expect(email).toHaveAttribute("aria-invalid", "true");
+    expect(email).toHaveAttribute("aria-describedby", error.id);
+    expect(password).toHaveAttribute("aria-invalid", "true");
+    expect(password).toHaveAttribute("aria-describedby", error.id);
+  });
+
   it("renders without requiring an admin session", async () => {
     adminMocks.getSupabaseConfig.mockReturnValue({
       url: "https://example.supabase.co",
@@ -85,5 +102,105 @@ describe("ProtectedAdminLayout", () => {
 
     expect(adminMocks.redirect).toHaveBeenCalledWith("/admin/login");
     expect(screen.queryByText("Protected admin content")).not.toBeInTheDocument();
+  });
+});
+
+describe("Admin route redirects", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("redirects the admin root to content", () => {
+    expect(() => AdminPage()).toThrow("NEXT_REDIRECT:/admin/content");
+
+    expect(adminMocks.redirect).toHaveBeenCalledWith("/admin/content");
+  });
+});
+
+describe("ContentPage", () => {
+  it("renders a protected content placeholder", () => {
+    render(<ContentPage />);
+
+    expect(screen.getByRole("heading", { name: /content/i })).toBeInTheDocument();
+    expect(screen.getByText(/content editor comes next/i)).toBeInTheDocument();
+  });
+});
+
+describe("admin auth actions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("redirects to content after a configured successful sign in", async () => {
+    const signInWithPassword = vi.fn().mockResolvedValue({ error: null });
+    adminMocks.getSupabaseConfig.mockReturnValue({
+      url: "https://example.supabase.co",
+      anonKey: "anon-key",
+      isConfigured: true,
+    });
+    adminMocks.createSupabaseServerClient.mockResolvedValue({
+      auth: { signInWithPassword },
+    });
+
+    const formData = new FormData();
+    formData.set("email", "admin@example.com");
+    formData.set("password", "password");
+
+    await expect(signInAdmin(formData)).rejects.toThrow("NEXT_REDIRECT:/admin/content");
+
+    expect(signInWithPassword).toHaveBeenCalledWith({
+      email: "admin@example.com",
+      password: "password",
+    });
+    expect(adminMocks.redirect).toHaveBeenCalledWith("/admin/content");
+  });
+
+  it("redirects to the invalid login state after a configured failed sign in", async () => {
+    adminMocks.getSupabaseConfig.mockReturnValue({
+      url: "https://example.supabase.co",
+      anonKey: "anon-key",
+      isConfigured: true,
+    });
+    adminMocks.createSupabaseServerClient.mockResolvedValue({
+      auth: {
+        signInWithPassword: vi.fn().mockResolvedValue({ error: new Error("invalid") }),
+      },
+    });
+
+    await expect(signInAdmin(new FormData())).rejects.toThrow(
+      "NEXT_REDIRECT:/admin/login?error=invalid",
+    );
+
+    expect(adminMocks.redirect).toHaveBeenCalledWith("/admin/login?error=invalid");
+  });
+
+  it("redirects to content for the unconfigured local fallback sign in", async () => {
+    adminMocks.getSupabaseConfig.mockReturnValue({
+      url: undefined,
+      anonKey: undefined,
+      isConfigured: false,
+    });
+
+    await expect(signInAdmin(new FormData())).rejects.toThrow("NEXT_REDIRECT:/admin/content");
+
+    expect(adminMocks.createSupabaseServerClient).not.toHaveBeenCalled();
+    expect(adminMocks.redirect).toHaveBeenCalledWith("/admin/content");
+  });
+
+  it("signs out when configured and redirects to login", async () => {
+    const signOut = vi.fn().mockResolvedValue({ error: null });
+    adminMocks.getSupabaseConfig.mockReturnValue({
+      url: "https://example.supabase.co",
+      anonKey: "anon-key",
+      isConfigured: true,
+    });
+    adminMocks.createSupabaseServerClient.mockResolvedValue({
+      auth: { signOut },
+    });
+
+    await expect(signOutAdmin()).rejects.toThrow("NEXT_REDIRECT:/admin/login");
+
+    expect(signOut).toHaveBeenCalled();
+    expect(adminMocks.redirect).toHaveBeenCalledWith("/admin/login");
   });
 });

@@ -9,6 +9,7 @@ type LoginPageProps = {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const hasInvalidLogin = params?.error === "invalid";
+  const errorId = "admin-login-error";
 
   return (
     <main className="min-h-screen bg-[#fbf8f0] px-5 py-10 text-[#0a1f44] sm:px-8">
@@ -21,7 +22,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </p>
 
           {hasInvalidLogin ? (
-            <p className="mt-6 border border-[#7c5c3b]/30 bg-[#f7efe2] px-4 py-3 text-sm font-medium text-[#7c5c3b]">
+            <p
+              id={errorId}
+              role="alert"
+              className="mt-6 border border-[#7c5c3b]/30 bg-[#f7efe2] px-4 py-3 text-sm font-medium text-[#7c5c3b]"
+            >
               Invalid email or password. Please try again.
             </p>
           ) : null}
@@ -37,6 +42,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 type="email"
                 autoComplete="email"
                 required
+                aria-invalid={hasInvalidLogin}
+                aria-describedby={hasInvalidLogin ? errorId : undefined}
                 className="mt-2 w-full border border-[#bdbfba] bg-white px-4 py-3 text-base text-[#0a1f44] outline-none transition focus:border-[#0a1f44] focus:ring-2 focus:ring-[#d6c8a5]"
               />
             </div>
@@ -51,6 +58,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 type="password"
                 autoComplete="current-password"
                 required
+                aria-invalid={hasInvalidLogin}
+                aria-describedby={hasInvalidLogin ? errorId : undefined}
                 className="mt-2 w-full border border-[#bdbfba] bg-white px-4 py-3 text-base text-[#0a1f44] outline-none transition focus:border-[#0a1f44] focus:ring-2 focus:ring-[#d6c8a5]"
               />
             </div>
