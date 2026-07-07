@@ -232,7 +232,7 @@ describe("cms draft actions", () => {
     const formData = new FormData();
     formData.set("albumId", "album-id");
     formData.set("albumSlug", "Highlights");
-    formData.append("images", new File(["image"], "Jajah & Smart.JPG", { type: "image/jpeg" }));
+    formData.append("images", new File([new Uint8Array(11 * 1024 * 1024)], "Jajah & Smart.JPG", { type: "image/jpeg" }));
 
     await expect(uploadGalleryImages(formData)).resolves.toEqual({ ok: true });
 

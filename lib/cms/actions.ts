@@ -23,6 +23,9 @@ type CmsActionResult = {
 
 let fallbackDraftContent: WeddingContent = structuredClone(fallbackCmsSnapshot.content) as WeddingContent;
 
+const galleryImageMaxSizeMb = 30;
+const galleryImageMaxSizeBytes = galleryImageMaxSizeMb * 1024 * 1024;
+
 async function getOrCreateDraftVersionId(supabase: SupabaseClient): Promise<string> {
   const existingResult = await supabase
     .from("content_versions")
@@ -159,8 +162,8 @@ export async function uploadGalleryImages(formData: FormData): Promise<CmsAction
       return { ok: false, message: `${file.name} is not an image.` };
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      return { ok: false, message: `${file.name} is larger than 10MB.` };
+    if (file.size > galleryImageMaxSizeBytes) {
+      return { ok: false, message: `${file.name} is larger than ${galleryImageMaxSizeMb}MB.` };
     }
 
     const storagePath = buildGalleryStoragePath({
