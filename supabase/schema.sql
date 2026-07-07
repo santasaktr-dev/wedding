@@ -56,20 +56,39 @@ create table if not exists public.gallery_images (
   updated_at timestamptz not null default now()
 );
 
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'gallery_albums_cover_image_id_fkey'
+    and conrelid = 'public.gallery_albums'::regclass
+  ) then
+    alter table public.gallery_albums
+      add constraint gallery_albums_cover_image_id_fkey
+      foreign key (cover_image_id)
+      references public.gallery_images(id)
+      on delete set null;
+  end if;
+end $$;
+
 alter table public.content_versions enable row level security;
 alter table public.content_sections enable row level security;
 alter table public.gallery_albums enable row level security;
 alter table public.gallery_images enable row level security;
 
+drop policy if exists "Public read published content versions" on public.content_versions;
 create policy "Public read published content versions"
 on public.content_versions for select
 using (status = 'published' or auth.role() = 'authenticated');
 
+drop policy if exists "Authenticated write content versions" on public.content_versions;
 create policy "Authenticated write content versions"
 on public.content_versions for all
 using (auth.role() = 'authenticated')
 with check (auth.role() = 'authenticated');
 
+drop policy if exists "Public read published content sections" on public.content_sections;
 create policy "Public read published content sections"
 on public.content_sections for select
 using (
@@ -80,24 +99,40 @@ using (
   )
 );
 
+drop policy if exists "Authenticated write content sections" on public.content_sections;
 create policy "Authenticated write content sections"
 on public.content_sections for all
 using (auth.role() = 'authenticated')
 with check (auth.role() = 'authenticated');
 
+drop policy if exists "Public read published gallery albums" on public.gallery_albums;
 create policy "Public read published gallery albums"
 on public.gallery_albums for select
 using (status = 'published' or auth.role() = 'authenticated');
 
+drop policy if exists "Authenticated write gallery albums" on public.gallery_albums;
 create policy "Authenticated write gallery albums"
 on public.gallery_albums for all
 using (auth.role() = 'authenticated')
 with check (auth.role() = 'authenticated');
 
+drop policy if exists "Public read published gallery images" on public.gallery_images;
 create policy "Public read published gallery images"
 on public.gallery_images for select
-using (status = 'published' or auth.role() = 'authenticated');
+using (
+  auth.role() = 'authenticated'
+  or (
+    status = 'published'
+    and exists (
+      select 1
+      from public.gallery_albums
+      where gallery_albums.id = gallery_images.album_id
+      and gallery_albums.status = 'published'
+    )
+  )
+);
 
+drop policy if exists "Authenticated write gallery images" on public.gallery_images;
 create policy "Authenticated write gallery images"
 on public.gallery_images for all
 using (auth.role() = 'authenticated')
