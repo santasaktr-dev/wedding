@@ -465,12 +465,6 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
           </div>
         </div>
 
-        <div className="mt-6 border border-[#0a1f44] bg-[#0a1f44] p-5 text-[#fbf8f0]">
-          <p className="luxury-heading text-xs font-semibold text-[#d6c8a5]">Inline preview</p>
-          <h2 className="mt-3 text-2xl font-semibold">{content.hero.coupleName}</h2>
-          <p className="mt-2 text-sm text-[#d6c8a5]">{textValue(content.hero.date, language)}</p>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-white/80">{textValue(content.hero.text, language)}</p>
-        </div>
       </section>
     </div>
   );

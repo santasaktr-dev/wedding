@@ -227,8 +227,8 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
         th: "กรุณายืนยันการเข้าร่วมงานภายในวันที่ 30 กันยายน 2569 เพื่อให้เราจัดเตรียมงานได้อย่างเหมาะสมและสวยงามสำหรับทุกคน",
       },
       note: {
-        en: "RSVP responses will be saved to the wedding Google Sheet.",
-        th: "ข้อมูล RSVP จะถูกบันทึกไว้ใน Google Sheet ของงานแต่ง",
+        en: "",
+        th: "",
       },
       deadline: "2026-09-30",
     },

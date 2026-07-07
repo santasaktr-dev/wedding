@@ -180,7 +180,6 @@ const copy = {
     rsvpTitle: "Kindly Confirm Your Attendance",
     rsvpIntro:
       "Please confirm your attendance by 30 September 2026. Your response helps us prepare the celebration beautifully for everyone.",
-    rsvpNote: "RSVP responses will be saved to the wedding Google Sheet.",
     faqEyebrow: "FAQ",
     faqTitle: "Guest Notes",
     faqs: [
@@ -356,7 +355,6 @@ const copy = {
     rsvpEyebrow: "ตอบรับคำเชิญ",
     rsvpTitle: "กรุณายืนยันการเข้าร่วมงาน",
     rsvpIntro: "กรุณายืนยันการเข้าร่วมงานภายในวันที่ 30 กันยายน 2569 เพื่อให้เราจัดเตรียมงานได้อย่างเหมาะสมและสวยงามสำหรับทุกคน",
-    rsvpNote: "ข้อมูล RSVP จะถูกบันทึกไว้ใน Google Sheet ของงานแต่ง",
     faqEyebrow: "FAQ",
     faqTitle: "คำถามที่พบบ่อย",
     faqs: [
@@ -782,9 +780,6 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
             </h2>
             <p className="mt-5 text-lg leading-8 text-[#0A1F44]/72">
               {t.rsvpIntro}
-            </p>
-            <p className="mt-5 rounded border border-[#D6C8A5]/50 bg-[#D6C8A5]/12 p-4 text-sm leading-6 text-[#0A1F44]/72">
-              {t.rsvpNote}
             </p>
           </div>
           <RsvpForm language={language} />
