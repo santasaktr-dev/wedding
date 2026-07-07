@@ -120,6 +120,15 @@ describe("Admin route redirects", () => {
 });
 
 describe("ContentPage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    adminMocks.getSupabaseConfig.mockReturnValue({
+      url: undefined,
+      anonKey: undefined,
+      isConfigured: false,
+    });
+  });
+
   it("renders the protected content editor", async () => {
     render(await ContentPage());
 
