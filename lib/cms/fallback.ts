@@ -15,8 +15,8 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
         th: "วันอาทิตย์ที่ 1 พฤศจิกายน 2569",
       },
       text: {
-        en: "Together with their families request the pleasure of your company at the celebration of their wedding at Pearl Wedding Avenue.",
-        th: "เรียนเชิญร่วมเป็นเกียรติในงานฉลองมงคลสมรสของ Jajah & Smart ณ Pearl Wedding Avenue",
+        en: "Together with their families request the pleasure of your company at the celebration of their wedding at Pearl Wedding Venue.",
+        th: "เรียนเชิญร่วมเป็นเกียรติในงานฉลองมงคลสมรสของ Jajah & Smart ณ Pearl Wedding Venue",
       },
       imageSrc: weddingHeroImage,
       imageAlt: {
@@ -62,7 +62,7 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
         {
           id: "venue",
           label: { en: "Venue", th: "สถานที่" },
-          value: { en: "Pearl Wedding Avenue", th: "Pearl Wedding Avenue" },
+          value: { en: "Pearl Wedding Venue", th: "Pearl Wedding Venue" },
         },
         {
           id: "dress",
@@ -121,23 +121,23 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
         th: "สถานที่",
       },
       title: {
-        en: "Pearl Wedding Avenue",
-        th: "Pearl Wedding Avenue",
+        en: "Pearl Wedding Venue",
+        th: "Pearl Wedding Venue",
       },
       intro: {
-        en: "Pearl Wedding Avenue is located on Borommaratchachonnani Road outbound, between Phutthamonthon Sai 2 and Sai 3.",
+        en: "Pearl Wedding Venue is located on Borommaratchachonnani Road outbound, between Phutthamonthon Sai 2 and Sai 3.",
         th: "สถานที่ตั้งอยู่ติดถนนบรมราชชนนีฝั่งขาออก ช่วงระหว่างพุทธมณฑลสาย 2 และพุทธมณฑลสาย 3",
       },
       address: {
-        en: "Pearl Wedding Avenue, Borommaratchachonnani Road, Bangkok",
-        th: "Pearl Wedding Avenue, ถนนบรมราชชนนี, กรุงเทพฯ",
+        en: "Pearl Wedding Venue, Borommaratchachonnani Road, Bangkok",
+        th: "Pearl Wedding Venue, ถนนบรมราชชนนี, กรุงเทพฯ",
       },
       parkingNote: {
         en: "Please allow extra travel time and follow the Google Maps route to the venue.",
         th: "กรุณาเผื่อเวลาเดินทาง และสามารถกด Google Maps เพื่อนำทางมายังสถานที่",
       },
       mapsUrl: "https://maps.app.goo.gl/XwnnwTVqNXy3SNzSA",
-      mapsEmbedUrl: "https://www.google.com/maps?q=Pearl%20Wedding%20Avenue%20Borommaratchachonnani&output=embed",
+      mapsEmbedUrl: "https://www.google.com/maps?q=Pearl%20Wedding%20Venue%20Borommaratchachonnani&output=embed",
       mapsButton: {
         en: "Open Google Maps",
         th: "เปิด Google Maps",
@@ -304,7 +304,7 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
           },
           answer: {
             en: "Please use the Google Maps link on this page. The venue is on Borommaratchachonnani Road outbound, between Phutthamonthon Sai 2 and Sai 3.",
-            th: "สามารถกด Google Maps บนหน้าเว็บเพื่อนำทางไป Pearl Wedding Avenue ซึ่งตั้งอยู่บนถนนบรมราชชนนีฝั่งขาออก ช่วงระหว่างพุทธมณฑลสาย 2 และสาย 3",
+            th: "สามารถกด Google Maps บนหน้าเว็บเพื่อนำทางไป Pearl Wedding Venue ซึ่งตั้งอยู่บนถนนบรมราชชนนีฝั่งขาออก ช่วงระหว่างพุทธมณฑลสาย 2 และสาย 3",
           },
           sortOrder: 2,
         },
@@ -349,8 +349,8 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
     footer: {
       coupleName: "Jajah & Smart",
       details: {
-        en: "1 November 2026 · Pearl Wedding Avenue",
-        th: "1 November 2026 · Pearl Wedding Avenue",
+        en: "1 November 2026 · Pearl Wedding Venue",
+        th: "1 November 2026 · Pearl Wedding Venue",
       },
     },
   },

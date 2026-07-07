@@ -15,10 +15,8 @@ export function moveItem<T>(items: readonly T[], fromIndex: number, toIndex: num
 }
 
 export function normalizeSortOrder<T extends SortableItem>(items: readonly T[]): T[] {
-  return [...items]
-    .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((item, index) => ({
-      ...item,
-      sortOrder: index,
-    }));
+  return items.map((item, index) => ({
+    ...item,
+    sortOrder: index,
+  }));
 }

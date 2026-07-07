@@ -14,7 +14,7 @@ describe("moveItem", () => {
 });
 
 describe("normalizeSortOrder", () => {
-  it("sorts by existing order and rewrites sortOrder from zero", () => {
+  it("preserves array order and rewrites sortOrder from zero", () => {
     const items = [
       { id: "b", sortOrder: 8 },
       { id: "a", sortOrder: 4 },
@@ -23,8 +23,8 @@ describe("normalizeSortOrder", () => {
     const result = normalizeSortOrder(items);
 
     expect(result).toEqual([
-      { id: "a", sortOrder: 0 },
-      { id: "b", sortOrder: 1 },
+      { id: "b", sortOrder: 0 },
+      { id: "a", sortOrder: 1 },
     ]);
     expect(items).toEqual([
       { id: "b", sortOrder: 8 },
