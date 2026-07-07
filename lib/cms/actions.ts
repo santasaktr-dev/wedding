@@ -219,3 +219,83 @@ export async function saveGalleryImageOrder(albumId: string, orderedImageIds: st
 
   return { ok: true };
 }
+
+export async function publishDraftContent(): Promise<CmsActionResult> {
+  if (!getSupabaseConfig().isConfigured) {
+    revalidatePath("/");
+    revalidatePath("/gallery");
+    revalidatePath("/admin/settings");
+
+    return { ok: true };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const draftResult = await supabase.from("content_versions").select("id").eq("status", "draft").maybeSingle();
+
+  if (draftResult.error) {
+    return { ok: false, message: draftResult.error.message };
+  }
+
+  if (!draftResult.data?.id) {
+    return { ok: false, message: "No draft to publish." };
+  }
+
+  const publishedVersionResult = await supabase
+    .from("content_versions")
+    .insert({ status: "published", published_at: new Date().toISOString() })
+    .select("id")
+    .single();
+
+  if (publishedVersionResult.error || !publishedVersionResult.data?.id) {
+    return {
+      ok: false,
+      message: publishedVersionResult.error?.message ?? "Unable to create published content version.",
+    };
+  }
+
+  const draftSectionsResult = await supabase
+    .from("content_sections")
+    .select("section_key, language, content")
+    .eq("version_id", draftResult.data.id);
+
+  if (draftSectionsResult.error) {
+    return { ok: false, message: draftSectionsResult.error.message };
+  }
+
+  const publishedSections = (draftSectionsResult.data ?? []).map((section) => ({
+    version_id: publishedVersionResult.data.id,
+    section_key: section.section_key,
+    language: section.language,
+    content: section.content,
+  }));
+
+  if (publishedSections.length > 0) {
+    const sectionWriteResult = await supabase.from("content_sections").insert(publishedSections);
+
+    if (sectionWriteResult.error) {
+      return { ok: false, message: sectionWriteResult.error.message };
+    }
+  }
+
+  const albumResult = await supabase.from("gallery_albums").update({ status: "published" }).eq("status", "draft");
+
+  if (albumResult.error) {
+    return { ok: false, message: albumResult.error.message };
+  }
+
+  const imageResult = await supabase.from("gallery_images").update({ status: "published" }).eq("status", "draft");
+
+  if (imageResult.error) {
+    return { ok: false, message: imageResult.error.message };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/gallery");
+  revalidatePath("/admin/settings");
+
+  return { ok: true };
+}
+
+export async function publishDraftContentFromForm(): Promise<void> {
+  await publishDraftContent();
+}

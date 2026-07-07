@@ -147,11 +147,12 @@ describe("GalleryPage", () => {
 });
 
 describe("SettingsPage", () => {
-  it("renders a protected settings placeholder", () => {
+  it("renders protected publish controls", () => {
     render(<SettingsPage />);
 
-    expect(screen.getByRole("heading", { name: /settings/i })).toBeInTheDocument();
-    expect(screen.getByText(/settings arrive in an upcoming task/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /publish/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /publish draft/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /preview full page/i })).toHaveAttribute("href", "/preview");
   });
 });
 

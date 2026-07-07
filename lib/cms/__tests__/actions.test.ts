@@ -1,7 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fallbackCmsSnapshot } from "../fallback";
-import { getDraftContentForAdmin, saveDraftContent, saveGalleryImageOrder, uploadGalleryImages } from "../actions";
+import {
+  getDraftContentForAdmin,
+  publishDraftContent,
+  saveDraftContent,
+  saveGalleryImageOrder,
+  uploadGalleryImages,
+} from "../actions";
 
 const actionMocks = vi.hoisted(() => ({
   getSupabaseConfig: vi.fn(() => ({ url: undefined, anonKey: undefined, isConfigured: false })),
@@ -252,5 +258,37 @@ describe("cms draft actions", () => {
     expect(updateQuery.eq).toHaveBeenCalledWith("album_id", "album-id");
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/admin/gallery");
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/gallery");
+  });
+
+  it("publishes locally when Supabase is not configured", async () => {
+    await expect(publishDraftContent()).resolves.toEqual({ ok: true });
+
+    expect(actionMocks.createSupabaseServerClient).not.toHaveBeenCalled();
+    expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/");
+    expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/gallery");
+    expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/admin/settings");
+  });
+
+  it("returns an error when no configured draft exists to publish", async () => {
+    actionMocks.getSupabaseConfig.mockReturnValue({
+      url: "https://example.supabase.co",
+      anonKey: "anon-key",
+      isConfigured: true,
+    });
+
+    const versionQuery = createQueryResult({ data: null, error: null });
+    actionMocks.createSupabaseServerClient.mockResolvedValue({
+      from: vi.fn((table: string) => {
+        if (table === "content_versions") {
+          return versionQuery;
+        }
+        throw new Error(`Unexpected table: ${table}`);
+      }),
+    });
+
+    await expect(publishDraftContent()).resolves.toEqual({
+      ok: false,
+      message: "No draft to publish.",
+    });
   });
 });
