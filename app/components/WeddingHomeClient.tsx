@@ -799,7 +799,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
               {localized(content.rsvp.intro, t.rsvpIntro)}
             </p>
           </div>
-          <RsvpForm language={language} />
+          <RsvpForm language={language} relationshipOptions={content.rsvp.relationshipOptions} />
         </div>
       </section>
 

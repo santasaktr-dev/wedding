@@ -12,6 +12,14 @@ export type NavigationItem = {
   isVisible: boolean;
 };
 
+export type SelectOption = {
+  id: string;
+  value: string;
+  label: LocalizedText;
+  sortOrder: number;
+  isVisible: boolean;
+};
+
 export type EventInfoCard = {
   id: string;
   label: LocalizedText;
@@ -121,6 +129,7 @@ export type WeddingContent = {
     intro: LocalizedText;
     note: LocalizedText;
     deadline: string;
+    relationshipOptions: SelectOption[];
   };
   gallery: {
     eyebrow: LocalizedText;

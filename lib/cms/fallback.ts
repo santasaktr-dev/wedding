@@ -291,6 +291,57 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
         th: "",
       },
       deadline: "2026-09-30",
+      relationshipOptions: [
+        {
+          id: "groom-friend",
+          value: "groom-friend",
+          label: { en: "Groom's Friend", th: "เพื่อนเจ้าบ่าว" },
+          sortOrder: 0,
+          isVisible: true,
+        },
+        {
+          id: "bride-friend",
+          value: "bride-friend",
+          label: { en: "Bride's Friend", th: "เพื่อนเจ้าสาว" },
+          sortOrder: 1,
+          isVisible: true,
+        },
+        {
+          id: "groom-relative",
+          value: "groom-relative",
+          label: { en: "Groom's Relative", th: "ญาติเจ้าบ่าว" },
+          sortOrder: 2,
+          isVisible: true,
+        },
+        {
+          id: "bride-relative",
+          value: "bride-relative",
+          label: { en: "Bride's Relative", th: "ญาติเจ้าสาว" },
+          sortOrder: 3,
+          isVisible: true,
+        },
+        {
+          id: "groom-side-guest",
+          value: "groom-side-guest",
+          label: { en: "Groom's Side Guest", th: "แขกฝ่ายเจ้าบ่าว" },
+          sortOrder: 4,
+          isVisible: true,
+        },
+        {
+          id: "bride-side-guest",
+          value: "bride-side-guest",
+          label: { en: "Bride's Side Guest", th: "แขกฝ่ายเจ้าสาว" },
+          sortOrder: 5,
+          isVisible: true,
+        },
+        {
+          id: "other",
+          value: "other",
+          label: { en: "Other", th: "อื่น ๆ" },
+          sortOrder: 6,
+          isVisible: true,
+        },
+      ],
     },
     gallery: {
       eyebrow: {

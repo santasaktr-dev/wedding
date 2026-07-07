@@ -5,6 +5,7 @@
 import { useMemo, useState, useTransition } from "react";
 
 import { saveDraftContent, uploadHeroImage } from "../../../lib/cms/actions";
+import { fallbackCmsSnapshot } from "../../../lib/cms/fallback";
 import type { DressColor, Language, LocalizedText, WeddingContent } from "../../../lib/cms/types";
 import { LanguageTabs } from "./LanguageTabs";
 import { StatusBanner } from "./StatusBanner";
@@ -39,6 +40,16 @@ const sectionItems: Array<{ id: EditableSection; label: string; description: str
 
 function textValue(value: LocalizedText, language: Language) {
   return value[language];
+}
+
+function slugifyOptionValue(value: string, fallback: string) {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || fallback
+  );
 }
 
 type FieldProps = {
@@ -78,7 +89,18 @@ function TextField({ id, label, value, onChange, multiline = false, type = "text
 }
 
 export function SectionEditor({ initialContent }: { initialContent: WeddingContent }) {
-  const [content, setContent] = useState(initialContent);
+  const [content, setContent] = useState(() => ({
+    ...initialContent,
+    navigation:
+      initialContent.navigation?.items?.length > 0 ? initialContent.navigation : fallbackCmsSnapshot.content.navigation,
+    rsvp: {
+      ...initialContent.rsvp,
+      relationshipOptions:
+        initialContent.rsvp.relationshipOptions?.length > 0
+          ? initialContent.rsvp.relationshipOptions
+          : fallbackCmsSnapshot.content.rsvp.relationshipOptions,
+    },
+  }));
   const [language, setLanguage] = useState<Language>("en");
   const [activeSection, setActiveSection] = useState<EditableSection>("hero");
   const [status, setStatus] = useState<SaveStatus>("idle");
@@ -290,6 +312,64 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
         ),
       },
     }));
+  };
+
+  const updateRelationshipOption = (
+    id: string,
+    field: "label" | "value" | "isVisible",
+    value: string | boolean,
+  ) => {
+    setStatus("idle");
+    setContent((current) => ({
+      ...current,
+      rsvp: {
+        ...current.rsvp,
+        relationshipOptions: current.rsvp.relationshipOptions.map((option) =>
+          option.id === id
+            ? field === "label"
+              ? {
+                  ...option,
+                  label: {
+                    ...option.label,
+                    [language]: value as string,
+                  },
+                }
+              : {
+                  ...option,
+                  [field]: value,
+                }
+            : option,
+        ),
+      },
+    }));
+  };
+
+  const addRelationshipOption = () => {
+    setStatus("idle");
+    setContent((current) => {
+      const sortOrder = current.rsvp.relationshipOptions.length;
+      const id = `custom-${Date.now()}`;
+
+      return {
+        ...current,
+        rsvp: {
+          ...current.rsvp,
+          relationshipOptions: [
+            ...current.rsvp.relationshipOptions,
+            {
+              id,
+              value: slugifyOptionValue(id, `custom-${sortOrder + 1}`),
+              label: {
+                en: "",
+                th: "",
+              },
+              sortOrder,
+              isVisible: true,
+            },
+          ],
+        },
+      };
+    });
   };
 
   const handleSave = () => {
@@ -840,6 +920,60 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
                 type="date"
                 value={content.rsvp.deadline}
               />
+              <div className="grid gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-[#0a1f44]">Relationship options</p>
+                    <p className="mt-1 text-xs leading-5 text-[#3e4d3a]">
+                      Labels show in the RSVP dropdown. Values are submitted to the RSVP sheet.
+                    </p>
+                  </div>
+                  <button
+                    className="min-h-11 border border-[#0a1f44] px-4 text-sm font-semibold text-[#0a1f44] transition hover:bg-[#0a1f44] hover:text-[#fbf8f0]"
+                    onClick={addRelationshipOption}
+                    type="button"
+                  >
+                    Add relationship option
+                  </button>
+                </div>
+                {content.rsvp.relationshipOptions
+                  .toSorted((first, second) => first.sortOrder - second.sortOrder)
+                  .map((option, index) => (
+                    <div className="border border-[#d6c8a5] bg-white p-4" key={option.id}>
+                      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-[#7c5c3b]">
+                            {option.id.startsWith("custom-") ? "new option" : option.id}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-[#3e4d3a]">Order {index + 1}</p>
+                        </div>
+                        <label className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#0a1f44]">
+                          <input
+                            checked={option.isVisible}
+                            className="h-4 w-4 accent-[#0a1f44]"
+                            onChange={(event) => updateRelationshipOption(option.id, "isVisible", event.target.checked)}
+                            type="checkbox"
+                          />
+                          Show option
+                        </label>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <TextField
+                          id={`relationship-${option.id}-label`}
+                          label={option.id.startsWith("custom-") ? "New option label" : "Label"}
+                          onChange={(value) => updateRelationshipOption(option.id, "label", value)}
+                          value={textValue(option.label, language)}
+                        />
+                        <TextField
+                          id={`relationship-${option.id}-value`}
+                          label="Submission value"
+                          onChange={(value) => updateRelationshipOption(option.id, "value", value)}
+                          value={option.value}
+                        />
+                      </div>
+                    </div>
+                  ))}
+              </div>
             </>
           ) : null}
 

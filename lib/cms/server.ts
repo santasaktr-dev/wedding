@@ -109,6 +109,31 @@ function mergeSectionContent(content: WeddingContent, section: ContentSectionRow
   } as never;
 }
 
+function normalizeContent(content: WeddingContent): WeddingContent {
+  const fallbackContent = cloneFallbackContent();
+
+  return {
+    ...fallbackContent,
+    ...content,
+    navigation: {
+      ...fallbackContent.navigation,
+      ...(content.navigation ?? {}),
+      items:
+        Array.isArray(content.navigation?.items) && content.navigation.items.length > 0
+          ? content.navigation.items
+          : fallbackContent.navigation.items,
+    },
+    rsvp: {
+      ...fallbackContent.rsvp,
+      ...content.rsvp,
+      relationshipOptions:
+        Array.isArray(content.rsvp?.relationshipOptions) && content.rsvp.relationshipOptions.length > 0
+          ? content.rsvp.relationshipOptions
+          : fallbackContent.rsvp.relationshipOptions,
+    },
+  };
+}
+
 function mapGalleryImage(image: GalleryImageRow): GalleryImage {
   return {
     id: image.id,
@@ -144,6 +169,7 @@ export function loadCmsSnapshotFromRows({ version, sections, albums, images }: C
 
   const content = cloneFallbackContent();
   sections.forEach((section) => mergeSectionContent(content, section));
+  const normalizedContent = normalizeContent(content);
 
   const imagesByAlbum = new Map<string, GalleryImage[]>();
   images.map(mapGalleryImage).forEach((image) => {
@@ -166,7 +192,7 @@ export function loadCmsSnapshotFromRows({ version, sections, albums, images }: C
     status: version?.status ?? fallbackCmsSnapshot.status,
     updatedAt: version?.updated_at ?? fallbackCmsSnapshot.updatedAt,
     ...(version?.published_at ? { publishedAt: version.published_at } : { publishedAt: fallbackCmsSnapshot.publishedAt }),
-    content,
+    content: normalizedContent,
     albums: mappedAlbums.length > 0 ? mappedAlbums : fallbackCmsSnapshot.albums,
   };
 }

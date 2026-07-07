@@ -18,4 +18,13 @@ describe("WeddingHomeClient", () => {
     expect(screen.getByRole("heading", { name: "Custom Celebration" })).toBeInTheDocument();
     expect(screen.getByText("Custom intro from CMS.")).toBeInTheDocument();
   });
+
+  it("renders RSVP relationship options from the CMS snapshot", () => {
+    const snapshot = structuredClone(fallbackCmsSnapshot) as CmsSnapshot;
+    snapshot.content.rsvp.relationshipOptions[0].label.en = "Groom Side";
+
+    render(<WeddingHomeClient snapshot={snapshot} />);
+
+    expect(screen.getByRole("option", { name: "Groom Side" })).toHaveValue("groom-friend");
+  });
 });

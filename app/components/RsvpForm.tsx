@@ -2,16 +2,61 @@
 
 import { useState } from "react";
 
+import type { SelectOption } from "../../lib/cms/types";
+
 type SubmitState = "idle" | "submitting" | "success" | "error";
 type Language = "en" | "th";
 
-const relationshipOptions = [
-  { en: "Groom's Friend", th: "เพื่อนเจ้าบ่าว", value: "เพื่อนเจ้าบ่าว" },
-  { en: "Bride's Friend", th: "เพื่อนเจ้าสาว", value: "เพื่อนเจ้าสาว" },
-  { en: "Groom's Relative", th: "ญาติเจ้าบ่าว", value: "ญาติเจ้าบ่าว" },
-  { en: "Bride's Relative", th: "ญาติเจ้าสาว", value: "ญาติเจ้าสาว" },
-  { en: "Colleague", th: "เพื่อนร่วมงาน", value: "เพื่อนร่วมงาน" },
-  { en: "Other", th: "อื่น ๆ", value: "อื่นๆ" },
+const defaultRelationshipOptions: SelectOption[] = [
+  {
+    id: "groom-friend",
+    value: "groom-friend",
+    label: { en: "Groom's Friend", th: "เพื่อนเจ้าบ่าว" },
+    sortOrder: 0,
+    isVisible: true,
+  },
+  {
+    id: "bride-friend",
+    value: "bride-friend",
+    label: { en: "Bride's Friend", th: "เพื่อนเจ้าสาว" },
+    sortOrder: 1,
+    isVisible: true,
+  },
+  {
+    id: "groom-relative",
+    value: "groom-relative",
+    label: { en: "Groom's Relative", th: "ญาติเจ้าบ่าว" },
+    sortOrder: 2,
+    isVisible: true,
+  },
+  {
+    id: "bride-relative",
+    value: "bride-relative",
+    label: { en: "Bride's Relative", th: "ญาติเจ้าสาว" },
+    sortOrder: 3,
+    isVisible: true,
+  },
+  {
+    id: "groom-side-guest",
+    value: "groom-side-guest",
+    label: { en: "Groom's Side Guest", th: "แขกฝ่ายเจ้าบ่าว" },
+    sortOrder: 4,
+    isVisible: true,
+  },
+  {
+    id: "bride-side-guest",
+    value: "bride-side-guest",
+    label: { en: "Bride's Side Guest", th: "แขกฝ่ายเจ้าสาว" },
+    sortOrder: 5,
+    isVisible: true,
+  },
+  {
+    id: "other",
+    value: "other",
+    label: { en: "Other", th: "อื่น ๆ" },
+    sortOrder: 6,
+    isVisible: true,
+  },
 ];
 
 const attendanceOptions = [
@@ -162,8 +207,17 @@ function TextInput({
   );
 }
 
-export function RsvpForm({ language }: { language: Language }) {
+export function RsvpForm({
+  language,
+  relationshipOptions = defaultRelationshipOptions,
+}: {
+  language: Language;
+  relationshipOptions?: SelectOption[];
+}) {
   const c = formCopy[language];
+  const visibleRelationshipOptions = relationshipOptions
+    .filter((option) => option.isVisible)
+    .toSorted((first, second) => first.sortOrder - second.sortOrder);
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState("");
   const [showCalendarModal, setShowCalendarModal] = useState(false);
@@ -233,9 +287,9 @@ export function RsvpForm({ language }: { language: Language }) {
             <option disabled value="">
               {c.select}
             </option>
-            {relationshipOptions.map((option) => (
+            {visibleRelationshipOptions.map((option) => (
               <option key={option.value} value={option.value}>
-                {option[language]}
+                {option.label[language] || option.label.en}
               </option>
             ))}
           </select>

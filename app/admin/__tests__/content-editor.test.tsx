@@ -100,6 +100,35 @@ describe("SectionEditor", () => {
     });
   });
 
+  it("adds RSVP relationship options and saves the draft", async () => {
+    editorMocks.saveDraftContent.mockResolvedValue({ ok: true });
+    renderEditor();
+
+    fireEvent.click(screen.getByRole("button", { name: /RSVP/i }));
+    fireEvent.click(screen.getByRole("button", { name: /add relationship option/i }));
+    fireEvent.change(screen.getByLabelText(/new option label/i), {
+      target: { value: "VIP Guest" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /save draft/i }));
+
+    await waitFor(() => {
+      expect(editorMocks.saveDraftContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rsvp: expect.objectContaining({
+            relationshipOptions: expect.arrayContaining([
+              expect.objectContaining({
+                label: expect.objectContaining({
+                  en: "VIP Guest",
+                }),
+                isVisible: true,
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+  });
+
   it("uploads a hero image, updates the preview, and saves the draft", async () => {
     editorMocks.uploadHeroImage.mockResolvedValue({
       ok: true,

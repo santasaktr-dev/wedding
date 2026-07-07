@@ -76,6 +76,28 @@ describe("loadCmsSnapshotFromRows", () => {
     });
   });
 
+  it("fills new CMS fields when older content rows do not include them", () => {
+    const snapshot = loadCmsSnapshotFromRows({
+      sections: [
+        {
+          section_key: "rsvp",
+          language: "en",
+          content: {
+            title: { en: "Old Draft RSVP", th: "แบบร่างเดิม" },
+          },
+        },
+      ],
+      albums: [],
+      images: [],
+    });
+
+    expect(snapshot.content.navigation.items).toHaveLength(fallbackCmsSnapshot.content.navigation.items.length);
+    expect(snapshot.content.rsvp.relationshipOptions).toHaveLength(
+      fallbackCmsSnapshot.content.rsvp.relationshipOptions.length,
+    );
+    expect(snapshot.content.rsvp.title.en).toBe("Old Draft RSVP");
+  });
+
   it("maps and sorts gallery rows", () => {
     const snapshot = loadCmsSnapshotFromRows({
       sections: [],
