@@ -23,6 +23,9 @@ const adminMocks = vi.hoisted(() => ({
 
 vi.mock("next/navigation", () => ({
   redirect: adminMocks.redirect,
+  useRouter: () => ({
+    refresh: vi.fn(),
+  }),
   usePathname: () => "/admin/content",
 }));
 
@@ -138,8 +141,8 @@ describe("ContentPage", () => {
 });
 
 describe("GalleryPage", () => {
-  it("renders the protected gallery manager", () => {
-    render(<GalleryPage />);
+  it("renders the protected gallery manager", async () => {
+    render(await GalleryPage());
 
     expect(screen.getByRole("heading", { name: /albums/i })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /gallery albums/i })).toBeInTheDocument();

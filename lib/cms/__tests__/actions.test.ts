@@ -7,6 +7,7 @@ import {
   saveDraftContent,
   saveGalleryImageOrder,
   uploadGalleryImages,
+  uploadGalleryImagesAction,
 } from "../actions";
 
 const actionMocks = vi.hoisted(() => ({
@@ -32,6 +33,8 @@ function createQueryResult<T>(result: T) {
   const query = {
     select: vi.fn(() => query),
     eq: vi.fn(() => query),
+    order: vi.fn(() => query),
+    limit: vi.fn(() => query),
     maybeSingle: vi.fn(() => promise),
     single: vi.fn(() => promise),
     insert: vi.fn(() => query),
@@ -186,6 +189,17 @@ describe("cms draft actions", () => {
     });
   });
 
+  it("returns gallery upload errors to action-state forms", async () => {
+    const formData = new FormData();
+    formData.set("albumId", "album-id");
+    formData.set("albumSlug", "highlights");
+
+    await expect(uploadGalleryImagesAction({ ok: false }, formData)).resolves.toEqual({
+      ok: false,
+      message: "Supabase is not configured.",
+    });
+  });
+
   it("uploads gallery images and inserts draft image rows", async () => {
     actionMocks.getSupabaseConfig.mockReturnValue({
       url: "https://example.supabase.co",
@@ -228,6 +242,7 @@ describe("cms draft actions", () => {
       expect.objectContaining({
         album_id: "album-id",
         public_url: expect.stringMatching(/^https:\/\/cdn\.example\.com\/highlights\/\d+-jajah-smart\.jpg$/),
+        sort_order: 0,
         status: "draft",
       }),
     ]);

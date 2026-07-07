@@ -138,6 +138,20 @@ export async function uploadGalleryImages(formData: FormData): Promise<CmsAction
   }
 
   const supabase = await createSupabaseServerClient();
+  const latestSortOrderResult = await supabase
+    .from("gallery_images")
+    .select("sort_order")
+    .eq("album_id", albumId)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (latestSortOrderResult.error) {
+    return { ok: false, message: latestSortOrderResult.error.message };
+  }
+
+  const latestSortOrder =
+    typeof latestSortOrderResult.data?.sort_order === "number" ? latestSortOrderResult.data.sort_order : -1;
   const uploadedRows = [];
 
   for (const [index, file] of files.entries()) {
@@ -165,7 +179,7 @@ export async function uploadGalleryImages(formData: FormData): Promise<CmsAction
       album_id: albumId,
       storage_path: storagePath,
       public_url: data.publicUrl,
-      sort_order: Date.now() + index,
+      sort_order: latestSortOrder + index + 1,
       caption_en: "",
       caption_th: "",
       alt_en: "",
@@ -185,6 +199,19 @@ export async function uploadGalleryImages(formData: FormData): Promise<CmsAction
   revalidatePath("/gallery");
 
   return { ok: true };
+}
+
+export async function uploadGalleryImagesAction(
+  _previousState: CmsActionResult,
+  formData: FormData,
+): Promise<CmsActionResult> {
+  const result = await uploadGalleryImages(formData);
+
+  if (!result.ok) {
+    return result;
+  }
+
+  return { ok: true, message: "Uploaded selected photos." };
 }
 
 export async function uploadGalleryImagesFromForm(formData: FormData): Promise<void> {
