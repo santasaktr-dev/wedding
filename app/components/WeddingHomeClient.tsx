@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { CmsSnapshot } from "../../lib/cms/types";
 import { RsvpForm } from "./RsvpForm";
+import { WeddingCountdown } from "./WeddingCountdown";
 
 type Language = "en" | "th";
 
@@ -530,6 +531,8 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
           </div>
         </div>
       </section>
+
+      <WeddingCountdown language={language} />
 
       <section className="px-4 py-16 sm:px-6 lg:px-8" id="event-info">
         <div className="mx-auto max-w-7xl">

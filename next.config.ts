@@ -14,7 +14,7 @@ function getSupabaseHostname() {
   }
 }
 
-const supabaseHostname = getSupabaseHostname();
+const supabaseHostname = getSupabaseHostname() ?? "ssnnduppslxslsuwnqhx.supabase.co";
 
 const nextConfig: NextConfig = {
   experimental: {

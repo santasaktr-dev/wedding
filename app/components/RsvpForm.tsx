@@ -6,6 +6,7 @@ import type { SelectOption } from "../../lib/cms/types";
 
 type SubmitState = "idle" | "submitting" | "success" | "error";
 type Language = "en" | "th";
+type RsvpResult = { message?: string; reference?: string };
 
 const defaultRelationshipOptions: SelectOption[] = [
   {
@@ -101,6 +102,7 @@ const formCopy = {
     googleCalendar: "Add to Google Calendar",
     ics: "Download .ics",
     close: "Close",
+    reference: "Reference",
   },
   th: {
     fullName: "ชื่อ-นามสกุล",
@@ -128,6 +130,7 @@ const formCopy = {
     googleCalendar: "เพิ่มลง Google Calendar",
     ics: "ดาวน์โหลด .ics",
     close: "ปิด",
+    reference: "เลขอ้างอิง",
   },
 };
 
@@ -139,7 +142,7 @@ const calendarDetails = [
   "",
   "Date: Sunday, 1 November 2026",
   "Time: To be confirmed",
-  "Venue: Pearl Wedding Avenue",
+  "Venue: Pearl Wedding Venue",
   `Google Maps: ${mapsUrl}`,
   "",
   "We look forward to celebrating this special day with you and would be honored to have you join us.",
@@ -158,7 +161,7 @@ googleCalendarUrl.search = new URLSearchParams({
   dates: "20261101/20261102",
   ctz: "Asia/Bangkok",
   details: calendarDetails,
-  location: "Pearl Wedding Avenue",
+  location: "Pearl Wedding Venue",
 }).toString();
 
 const appleCalendarHref = `data:text/calendar;charset=utf-8,${encodeURIComponent(
@@ -173,7 +176,7 @@ const appleCalendarHref = `data:text/calendar;charset=utf-8,${encodeURIComponent
     "DTSTART;VALUE=DATE:20261101",
     "DTEND;VALUE=DATE:20261102",
     "SUMMARY:Jajah & Smart Wedding",
-    "LOCATION:Pearl Wedding Avenue",
+    "LOCATION:Pearl Wedding Venue",
     `DESCRIPTION:${icsDescription}`,
     "END:VEVENT",
     "END:VCALENDAR",
@@ -221,6 +224,7 @@ export function RsvpForm({
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState("");
   const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [reference, setReference] = useState("");
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -250,7 +254,7 @@ export function RsvpForm({
         body: JSON.stringify(payload),
       });
 
-      const result = (await response.json()) as { message?: string };
+      const result = (await response.json()) as RsvpResult;
 
       if (!response.ok) {
         throw new Error(result.message ?? c.error);
@@ -258,6 +262,7 @@ export function RsvpForm({
 
       setSubmitState("success");
       setMessage(c.success);
+      setReference(result.reference ?? "");
       setShowCalendarModal(true);
       form.reset();
     } catch (error) {
@@ -373,6 +378,11 @@ export function RsvpForm({
             <p className="mt-4 text-base leading-7 text-[#0A1F44]/72">
               {c.modalText}
             </p>
+            {reference ? (
+              <p className="mt-4 rounded border border-[#D6C8A5]/70 bg-[#D6C8A5]/20 px-4 py-3 text-sm font-semibold">
+                {c.reference}: {reference}
+              </p>
+            ) : null}
             <div className="mt-7 flex flex-col gap-3">
               <a
                 className="inline-flex min-h-12 items-center justify-center rounded bg-[#0A1F44] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:bg-[#7C5C3B]"
