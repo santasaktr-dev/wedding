@@ -443,8 +443,8 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
   const isThai = language === "th";
   const languageStyle = isThai
     ? ({
-        "--font-cinzel": "var(--font-prompt)",
-        fontFamily: "var(--font-prompt), ui-sans-serif, system-ui, sans-serif",
+        "--font-cinzel": "var(--font-kanit)",
+        fontFamily: "var(--font-kanit), ui-sans-serif, system-ui, sans-serif",
       } as CSSProperties)
     : undefined;
 
