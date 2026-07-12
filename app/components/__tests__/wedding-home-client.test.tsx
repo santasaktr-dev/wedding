@@ -27,4 +27,19 @@ describe("WeddingHomeClient", () => {
 
     expect(screen.getByRole("option", { name: "Groom Side" })).toHaveValue("groom-friend");
   });
+
+  it("links guests to the separate wedding memory book", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    expect(screen.getByRole("link", { name: "Share a Memory" })).toHaveAttribute(
+      "href",
+      "https://jjhsmartweddingsmemory.vercel.app",
+    );
+  });
+
+  it("uses the script display font for the J&S brand mark", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    expect(screen.getByRole("link", { name: "J&S" })).toHaveClass("script-display");
+  });
 });
