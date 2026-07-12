@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://jah-smart-wedding.example.com"),
   title: "Jajah & Smart Wedding",
   description:
-    "Join Jajah & Smart for their wedding celebration on Sunday, 1 November 2026 at Pearl Wedding Avenue.",
+    "Join Jajah & Smart for their wedding celebration on Sunday, 1 November 2026 at Pearl Wedding Venue.",
   openGraph: {
     title: "Jajah & Smart Wedding",
     description:

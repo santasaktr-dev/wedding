@@ -9,7 +9,7 @@ Source details are normalized from `wedding_website_implementation_plan_md.md`.
 - Couple: Jah & Smart
 - Date: Sunday, 1 November 2026
 - Time: From 16:00 onwards
-- Venue: Pearl Wedding Avenue
+- Venue: Pearl Wedding Venue
 - Theme: Modern Old Money / Minimal Luxury
 - Dress code: Old Money Elegance
 
