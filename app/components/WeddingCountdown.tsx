@@ -66,7 +66,7 @@ export function WeddingCountdown({ language }: { language: Language }) {
             <div className="mx-auto mt-8 grid max-w-3xl grid-cols-4 gap-1.5 sm:gap-4">
               {values.map((value, index) => (
                 <div className="rounded border border-[#D6C8A5]/30 bg-white/[0.04] px-1.5 py-3 sm:px-4 sm:py-5" key={text.units[index]}>
-                  <p className="text-2xl font-semibold tabular-nums text-[#D6C8A5] sm:text-4xl md:text-5xl">
+                  <p className="text-2xl font-semibold tabular-nums text-[#D6C8A5] sm:text-4xl md:text-5xl" suppressHydrationWarning>
                     {typeof value === "number" ? String(value).padStart(2, "0") : value}
                   </p>
                   <p className="mt-1 text-[0.5rem] font-semibold uppercase tracking-[0.08em] text-[#FBF8F0]/70 sm:mt-2 sm:text-xs sm:tracking-[0.18em]">
