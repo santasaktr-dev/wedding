@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cinzel, Great_Vibes, Prompt, Work_Sans } from "next/font/google";
+import { Cinzel, Great_Vibes, Kanit, Work_Sans } from "next/font/google";
 import "./globals.css";
 
 const cinzel = Cinzel({
@@ -20,9 +20,9 @@ const workSans = Work_Sans({
   weight: ["300", "400", "500", "600", "700"],
 });
 
-const prompt = Prompt({
+const kanit = Kanit({
   subsets: ["latin", "thai"],
-  variable: "--font-prompt",
+  variable: "--font-kanit",
   weight: ["300", "400", "500", "600", "700"],
 });
 
@@ -47,9 +47,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${cinzel.variable} ${greatVibes.variable} ${workSans.variable} ${prompt.variable}`}
-      >
+      <body className={`${cinzel.variable} ${greatVibes.variable} ${workSans.variable} ${kanit.variable}`}>
         {children}
       </body>
     </html>
