@@ -49,4 +49,19 @@ describe("GalleryPage", () => {
     expect(screen.getByRole("img", { name: "Portrait photo" })).toHaveClass("h-auto", "w-full");
     expect(screen.getByRole("img", { name: "Portrait photo" })).not.toHaveClass("object-cover");
   });
+
+  it("keeps gallery actions grouped on the right side of the header", async () => {
+    render(await GalleryPage());
+
+    expect(screen.getByTestId("gallery-header-actions")).toHaveClass("ml-auto");
+    expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute("href", "/#gallery");
+  });
+
+  it("applies the Thai font styling when the Thai gallery is selected", async () => {
+    render(await GalleryPage({ searchParams: Promise.resolve({ lang: "th" }) }));
+
+    expect(screen.getByRole("main")).toHaveClass("lang-th");
+    expect(screen.getByRole("main")).toHaveAttribute("lang", "th");
+    expect(screen.getByRole("main")).toHaveStyle({ fontFamily: "var(--font-kanit), ui-sans-serif, system-ui, sans-serif" });
+  });
 });

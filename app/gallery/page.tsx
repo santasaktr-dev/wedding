@@ -10,21 +10,27 @@ export default async function GalleryPage({ searchParams = Promise.resolve({}) }
   const isThai = language === "th";
 
   return (
-    <main className="subtle-paper min-h-screen bg-[#FBF8F0] text-[#0A1F44]">
+    <main
+      className={`subtle-paper min-h-screen bg-[#FBF8F0] text-[#0A1F44] ${isThai ? "lang-th" : ""}`}
+      lang={isThai ? "th" : "en"}
+      style={isThai ? { fontFamily: "var(--font-kanit), ui-sans-serif, system-ui, sans-serif" } : undefined}
+    >
       <header className="border-b border-[#0A1F44]/10 bg-[#FBF8F0]/90 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
         <nav className="mx-auto flex max-w-7xl items-center justify-between" aria-label="Gallery navigation">
-          <Link className="luxury-heading text-lg font-semibold" href="/">
+          <Link className="script-display text-2xl font-semibold leading-none" href="/">
             J&S
           </Link>
-          <Link
-            className="inline-flex min-h-10 items-center rounded border border-[#0A1F44]/15 px-4 text-sm font-bold uppercase tracking-[0.12em] transition hover:border-[#7C5C3B] hover:text-[#7C5C3B]"
-            href="/#gallery"
-          >
-            {isThai ? "กลับหน้าแรก" : "Back"}
-          </Link>
-          <Link className="ml-3 text-sm font-semibold" href={isThai ? "/gallery" : "/gallery?lang=th"}>
-            {isThai ? "EN" : "ไทย"}
-          </Link>
+          <div className="ml-auto flex items-center gap-2" data-testid="gallery-header-actions">
+            <Link
+              className="inline-flex min-h-10 items-center rounded border border-[#0A1F44]/15 px-3 text-sm font-bold uppercase tracking-[0.12em] transition hover:border-[#7C5C3B] hover:text-[#7C5C3B] sm:px-4"
+              href="/#gallery"
+            >
+              {isThai ? "กลับหน้าแรก" : "Back"}
+            </Link>
+            <Link className="px-2 text-sm font-semibold" href={isThai ? "/gallery" : "/gallery?lang=th"}>
+              {isThai ? "EN" : "ไทย"}
+            </Link>
+          </div>
         </nav>
       </header>
 
