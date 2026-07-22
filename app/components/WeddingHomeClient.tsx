@@ -69,6 +69,7 @@ const copy = {
     galleryIntro:
       "A quiet preview of the celebration, styled with the same refined and timeless mood as the wedding day.",
     galleryCta: "View Full Gallery",
+    memoryBookCta: "Share a Memory",
     galleryTabs: [
       { id: "prewedding", label: "Prewedding" },
       { id: "wedding-day", label: "Wedding Day", badge: "Soon" },
@@ -245,6 +246,7 @@ const copy = {
     galleryTitle: "ภาพพรีเวดดิ้ง",
     galleryIntro: "พรีวิวบรรยากาศอบอุ่น เรียบหรู และคลาสสิกในโทนเดียวกับวันงาน",
     galleryCta: "ดูแกลเลอรีทั้งหมด",
+    memoryBookCta: "ร่วมแบ่งปันความทรงจำ",
     galleryTabs: [
       { id: "prewedding", label: "Prewedding" },
       { id: "wedding-day", label: "Wedding Day", badge: "เร็ว ๆ นี้" },
@@ -458,7 +460,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
           aria-label="Primary navigation"
           className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
         >
-          <a className="luxury-heading text-lg font-semibold" href="#home">
+          <a className="script-display text-2xl font-semibold leading-none" href="#home">
             J&S
           </a>
           <div className="hidden items-center gap-7 text-sm font-medium md:flex">
@@ -529,6 +531,16 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
               </a>
             </div>
           </div>
+
+          <a
+            className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#7C5C3B] underline decoration-[#D6C8A5] underline-offset-4 transition hover:text-[#0A1F44]"
+            href="https://jjhsmartweddingsmemory.vercel.app"
+            rel="noreferrer"
+            target="_blank"
+          >
+            {t.memoryBookCta}
+            <span aria-hidden="true">↗</span>
+          </a>
         </div>
       </section>
 
