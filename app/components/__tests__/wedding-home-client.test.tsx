@@ -31,15 +31,48 @@ describe("WeddingHomeClient", () => {
   it("links guests to the separate wedding memory book", () => {
     render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
 
-    expect(screen.getByRole("link", { name: "Share a Memory" })).toHaveAttribute(
-      "href",
-      "https://jjhsmartweddingsmemory.vercel.app",
-    );
+    const memoryLink = screen.getByRole("link", { name: /Share a Memory/ });
+    expect(memoryLink).toHaveAttribute("href", "https://jjhsmartweddingsmemory.vercel.app");
+    expect(memoryLink.closest("section")).toHaveAttribute("id", "gallery");
   });
 
   it("uses the script display font for the J&S brand mark", () => {
     render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
 
     expect(screen.getByRole("link", { name: "J&S" })).toHaveClass("script-display");
+  });
+
+  it("keeps the editorial page landmarks and section anchors intact", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    expect(screen.getByRole("main")).toBeInTheDocument();
+    expect(screen.getByRole("banner")).toBeInTheDocument();
+    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
+
+    for (const sectionId of [
+      "home",
+      "event-info",
+      "schedule",
+      "gallery",
+      "location",
+      "dress-code",
+      "rsvp",
+      "faq",
+      "contact",
+    ]) {
+      expect(document.getElementById(sectionId)).toBeInTheDocument();
+    }
+  });
+
+  it("renders transport guidance as an accessible accordion", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    const transportDetails = document.querySelectorAll("#location details");
+
+    expect(transportDetails).toHaveLength(2);
+    expect(transportDetails[0]).not.toHaveAttribute("open");
+    expect(transportDetails[1]).not.toHaveAttribute("open");
+    expect(screen.getByText("Driving")).toBeInTheDocument();
+    expect(screen.getByText("Public Transportation")).toBeInTheDocument();
   });
 });

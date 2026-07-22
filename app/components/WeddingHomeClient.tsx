@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { CmsSnapshot } from "../../lib/cms/types";
 import { RsvpForm } from "./RsvpForm";
+import { ScrollReveal } from "./ScrollReveal";
 import { WeddingCountdown } from "./WeddingCountdown";
 
 type Language = "en" | "th";
@@ -472,14 +473,14 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
           </div>
           <div className="flex items-center gap-2">
             <button
-              className="inline-flex min-h-10 items-center rounded border border-[#D6C8A5]/55 px-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#FBF8F0] transition hover:bg-[#D6C8A5] hover:text-[#0A1F44]"
+              className="inline-flex min-h-10 items-center rounded-full border border-[#D6C8A5]/55 px-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#FBF8F0] transition hover:bg-[#D6C8A5] hover:text-[#0A1F44]"
               onClick={() => setLanguage(isThai ? "en" : "th")}
               type="button"
             >
               {t.languageButton}
             </button>
             <a
-              className="inline-flex min-h-10 items-center gap-2 rounded border border-[#D6C8A5]/80 px-4 text-sm font-semibold text-[#FBF8F0] transition hover:bg-[#D6C8A5] hover:text-[#0A1F44]"
+              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#D6C8A5]/80 px-4 text-sm font-semibold text-[#FBF8F0] transition hover:bg-[#D6C8A5] hover:text-[#0A1F44]"
               href="#rsvp"
             >
               <Users aria-hidden="true" size={16} />
@@ -489,41 +490,29 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
         </nav>
       </header>
 
-      <section
-        className="relative flex min-h-[92svh] items-end px-4 pb-12 pt-28 text-[#FBF8F0] sm:px-6 md:min-h-screen md:pb-16 lg:px-8"
-        id="home"
-      >
-        <Image
-          alt={localized(hero.imageAlt, "Elegant wedding venue with refined old money styling")}
-          className="object-cover"
-          fill
-          priority
-          sizes="100vw"
-          src={heroImageSrc}
-        />
-        <div className="absolute inset-0 bg-[#0A1F44]/55" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0A1F44] via-[#0A1F44]/35 to-transparent" />
-        <div className="relative mx-auto w-full max-w-7xl">
-          <div className="max-w-4xl">
-            <p className="mb-8 text-xs font-semibold uppercase tracking-[0.34em] text-[#D6C8A5] sm:mb-10">
+      <section className="grid bg-[#0A1F44] text-[#FBF8F0] md:min-h-[calc(100svh-4.5rem)] md:grid-cols-[0.82fr_1.18fr]" id="home">
+        <div className="order-2 flex items-center px-5 py-16 sm:px-10 md:order-1 md:px-12 lg:px-20">
+          <div className="max-w-xl">
+            <p className="mb-7 text-xs font-semibold uppercase tracking-[0.34em] text-[#D6C8A5]">
               {localized(hero.date, t.heroDate)}
             </p>
-            <h1 className="script-display text-6xl font-medium leading-[0.92] tracking-normal sm:text-7xl md:text-8xl lg:text-9xl">
+            <h1 className="script-display text-6xl font-medium leading-[0.92] tracking-normal sm:text-7xl lg:text-8xl">
               {hero.coupleName || "Jajah & Smart"}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#FBF8F0]/86 md:text-xl">
+            <div className="my-8 h-px w-24 bg-[#D6C8A5]" />
+            <p className="max-w-lg text-lg leading-8 text-[#FBF8F0]/78 md:text-xl">
               {localized(hero.text, t.heroText)}
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <a
-                className="inline-flex min-h-12 items-center justify-center rounded bg-[#D6C8A5] px-6 text-sm font-bold uppercase tracking-[0.12em] text-[#0A1F44] transition hover:bg-[#FBF8F0]"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#D6C8A5] px-6 text-sm font-bold uppercase tracking-[0.12em] text-[#0A1F44] transition hover:bg-[#FBF8F0]"
                 href="#location"
               >
                 <MapPin aria-hidden="true" className="mr-2" size={18} />
                 {localized(hero.locationButton, t.locationButton)}
               </a>
               <a
-                className="inline-flex min-h-12 items-center justify-center rounded border border-[#FBF8F0]/55 px-6 text-sm font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:border-[#D6C8A5] hover:text-[#D6C8A5]"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#FBF8F0]/40 px-6 text-sm font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:border-[#D6C8A5] hover:text-[#D6C8A5]"
                 href="#dress-code"
               >
                 <Shirt aria-hidden="true" className="mr-2" size={18} />
@@ -532,78 +521,95 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
             </div>
           </div>
 
-          <a
-            className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#7C5C3B] underline decoration-[#D6C8A5] underline-offset-4 transition hover:text-[#0A1F44]"
-            href="https://jjhsmartweddingsmemory.vercel.app"
-            rel="noreferrer"
-            target="_blank"
-          >
-            {t.memoryBookCta}
-            <span aria-hidden="true">↗</span>
-          </a>
+        </div>
+        <div className="relative order-1 aspect-[4/5] min-h-[21rem] overflow-hidden md:order-2 md:aspect-auto md:min-h-0">
+          <Image
+            alt={localized(hero.imageAlt, "Elegant wedding venue with refined old money styling")}
+            className="object-cover"
+            fill
+            priority
+            sizes="(min-width: 768px) 60vw, 100vw"
+            src={heroImageSrc}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A1F44]/55 via-transparent to-[#0A1F44]/10" />
+          <div className="absolute inset-5 rounded-bl-[3rem] rounded-tr-[3rem] border border-[#D6C8A5]/55 sm:inset-8 sm:rounded-bl-[5rem] sm:rounded-tr-[5rem]" />
         </div>
       </section>
 
-      <WeddingCountdown language={language} />
+      <ScrollReveal>
+        <WeddingCountdown language={language} />
+      </ScrollReveal>
 
-      <section className="px-4 py-16 sm:px-6 lg:px-8" id="event-info">
-        <div className="mx-auto max-w-7xl">
-          <SectionHeader
-            eyebrow={localized(content.eventInfo.eyebrow, t.eventEyebrow)}
-            title={localized(content.eventInfo.title, t.eventTitle)}
-          >
-            <p>{localized(content.eventInfo.intro, t.eventIntro)}</p>
-          </SectionHeader>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="scroll-mt-24 border-b border-[#0A1F44]/12 bg-[#FBF8F0] px-4 py-10 sm:px-6 lg:px-8" id="event-info">
+        <ScrollReveal className="mx-auto max-w-7xl">
+          <div className="mb-8 grid gap-3 md:grid-cols-[0.7fr_1.3fr] md:items-end">
+            <div>
+              <SectionLabel>{localized(content.eventInfo.eyebrow, t.eventEyebrow)}</SectionLabel>
+              <h2 className="luxury-heading text-2xl font-semibold leading-tight text-[#0A1F44] md:text-3xl">
+                {localized(content.eventInfo.title, t.eventTitle)}
+              </h2>
+            </div>
+            <p className="max-w-2xl text-sm leading-6 text-[#0A1F44]/65 md:justify-self-end md:text-base">
+              {localized(content.eventInfo.intro, t.eventIntro)}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 border-y border-[#0A1F44]/12 lg:grid-cols-4">
             {eventCards.map((card) => {
               const Icon = card.icon;
               return (
                 <article
-                  className="rounded border border-[#0A1F44]/10 bg-white/70 p-6 shadow-[0_18px_60px_rgba(10,31,68,0.08)]"
+                  className="border-b border-r border-[#0A1F44]/12 px-3 py-5 last:border-b-0 even:border-r-0 sm:px-5 lg:border-b-0 lg:even:border-r"
                   key={card.id}
                 >
-                  <Icon aria-hidden="true" className="mb-8 text-[#7C5C3B]" size={24} />
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#0A1F44]/55">
+                  <Icon aria-hidden="true" className="mb-5 text-[#7C5C3B]" size={20} />
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0A1F44]/55">
                     {localized(card.label, card.id)}
                   </h3>
-                  <p className="mt-3 text-xl font-semibold leading-snug text-[#0A1F44]">
+                  <p className="mt-2 text-base font-semibold leading-snug text-[#0A1F44]">
                     {localized(card.value, "")}
                   </p>
                 </article>
               );
             })}
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
-      <section className="bg-[#0A1F44] px-4 py-16 text-[#FBF8F0] sm:px-6 lg:px-8" id="schedule">
-        <div className="mx-auto max-w-6xl">
-          <SectionHeader
-            eyebrow={localized(content.schedule.eyebrow, t.scheduleEyebrow)}
-            title={localized(content.schedule.title, t.scheduleTitle)}
-          >
-            <p className="text-[#FBF8F0]/72">{localized(content.schedule.intro, t.scheduleIntro)}</p>
-          </SectionHeader>
-          <div className="mx-auto max-w-3xl">
+      <section className="scroll-mt-24 bg-[#0A1F44] px-4 py-20 text-[#FBF8F0] sm:px-6 lg:px-8" id="schedule">
+        <ScrollReveal className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.72fr_1.28fr]">
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <SectionLabel>{localized(content.schedule.eyebrow, t.scheduleEyebrow)}</SectionLabel>
+            <h2 className="luxury-heading text-3xl font-semibold leading-tight md:text-5xl">
+              {localized(content.schedule.title, t.scheduleTitle)}
+            </h2>
+            <p className="mt-5 max-w-md text-base leading-7 text-[#FBF8F0]/68">
+              {localized(content.schedule.intro, t.scheduleIntro)}
+            </p>
+          </div>
+          <div className="mx-auto w-full max-w-3xl">
             {scheduleItems.map((item, index) => (
-              <article className="relative grid grid-cols-[5rem_1fr] gap-5 pb-9" key={item.id}>
+              <article className="relative grid grid-cols-[3.5rem_1fr] gap-4 border-b border-[#D6C8A5]/18 py-7 first:pt-0 last:border-0 sm:grid-cols-[5rem_1fr] sm:gap-5" key={item.id}>
                 {index !== scheduleItems.length - 1 ? (
-                  <div className="absolute bottom-0 left-[5.45rem] top-8 w-px bg-[#D6C8A5]/35" />
+                  <div className="absolute bottom-0 left-[1.65rem] top-10 w-px bg-[#D6C8A5]/35 sm:left-[2.45rem]" />
                 ) : null}
-                <time className="pt-1 text-lg font-bold text-[#D6C8A5]">{item.time}</time>
-                <div className="relative rounded border border-white/12 bg-white/[0.04] p-5">
-                  <span className="absolute -left-[1.1rem] top-7 h-3 w-3 rounded-full bg-[#D6C8A5]" />
+                <div className="relative z-10 flex flex-col items-center">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-[#D6C8A5] text-xs font-bold text-[#0A1F44]">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <time className="mt-3 text-xs font-bold text-[#D6C8A5]">{item.time}</time>
+                </div>
+                <div className="pt-1">
                   <h3 className="luxury-heading text-lg font-semibold">{localized(item.title, item.id)}</h3>
-                  <p className="mt-1 text-[#FBF8F0]/70">{localized(item.detail, "")}</p>
+                  <p className="mt-2 text-[#FBF8F0]/65">{localized(item.detail, "")}</p>
                 </div>
               </article>
             ))}
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
-      <section className="bg-white/45 px-4 py-16 sm:px-6 lg:px-8" id="gallery">
-        <div className="mx-auto max-w-7xl">
+      <section className="scroll-mt-24 bg-white/45 px-4 py-16 sm:px-6 lg:px-8" id="gallery">
+        <ScrollReveal className="mx-auto max-w-7xl">
           <div className="mb-10 grid gap-5 md:grid-cols-[0.85fr_1.15fr] md:items-end">
             <div>
               <SectionLabel>{localized(content.gallery.eyebrow, t.galleryEyebrow)}</SectionLabel>
@@ -617,7 +623,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-            <figure className="group overflow-hidden rounded border border-[#0A1F44]/10 bg-[#0A1F44] shadow-[0_22px_70px_rgba(10,31,68,0.14)]">
+            <figure className="group overflow-hidden rounded-[1.5rem] border border-[#0A1F44]/10 bg-[#0A1F44] shadow-[0_22px_70px_rgba(10,31,68,0.14)]">
               <div className="relative aspect-[4/5] sm:aspect-[16/11] lg:h-full lg:min-h-[28rem]">
                 <Image
                   alt={previewImages[0]?.alt[language] ?? ""}
@@ -637,7 +643,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
             <div className="grid gap-4 sm:grid-cols-2">
               {previewImages.slice(1).map((image, index) => (
                 <figure
-                  className={`group overflow-hidden rounded border border-[#0A1F44]/10 bg-[#0A1F44] shadow-[0_18px_50px_rgba(10,31,68,0.1)] ${
+                  className={`group overflow-hidden rounded-[1.25rem] border border-[#0A1F44]/10 bg-[#0A1F44] shadow-[0_18px_50px_rgba(10,31,68,0.1)] ${
                     index === 0 ? "sm:col-span-2" : ""
                   }`}
                   key={image.id}
@@ -660,7 +666,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
               ))}
 
               <a
-                className="group flex min-h-40 flex-col justify-between rounded border border-[#0A1F44]/10 bg-[#0A1F44] p-6 text-[#FBF8F0] shadow-[0_18px_50px_rgba(10,31,68,0.12)] transition hover:bg-[#7C5C3B]"
+                className="group flex min-h-40 flex-col justify-between rounded-[1.25rem] border border-[#0A1F44]/10 bg-[#0A1F44] p-6 text-[#FBF8F0] shadow-[0_18px_50px_rgba(10,31,68,0.12)] transition hover:bg-[#7C5C3B]"
                 href="/gallery"
               >
                 <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D6C8A5]">
@@ -678,14 +684,31 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
                   </span>
                 </span>
               </a>
+              <a
+                className="group flex min-h-40 flex-col justify-between rounded-[1.25rem] border border-[#3E4D3A]/20 bg-[#3E4D3A] p-6 text-[#FBF8F0] shadow-[0_18px_50px_rgba(10,31,68,0.12)] transition hover:bg-[#7C5C3B]"
+                href="https://jjhsmartweddingsmemory.vercel.app"
+                rel="noreferrer"
+                target="_blank"
+              >
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D6C8A5]">Memory Book</span>
+                <span className="mt-8 flex items-end justify-between gap-4">
+                  <span className="max-w-[12rem] text-lg font-semibold leading-7">{t.memoryBookCta}</span>
+                  <span
+                    aria-hidden="true"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#D6C8A5]/55 text-xl transition group-hover:translate-x-1"
+                  >
+                    ↗
+                  </span>
+                </span>
+              </a>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
-      <section className="px-4 py-16 sm:px-6 lg:px-8" id="location">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
-          <div>
+      <section className="scroll-mt-24 bg-[#F3EFE5] px-4 py-20 sm:px-6 lg:px-8" id="location">
+        <ScrollReveal className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch">
+          <div className="order-2 lg:order-1">
             <SectionLabel>{localized(content.location.eyebrow, t.locationEyebrow)}</SectionLabel>
             <h2 className="luxury-heading text-3xl font-semibold leading-tight md:text-4xl">
               {localized(content.location.title, "Pearl Wedding Avenue")}
@@ -705,55 +728,58 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
             </div>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
-                className="inline-flex min-h-12 items-center justify-center rounded bg-[#0A1F44] px-5 text-sm font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:bg-[#7C5C3B]"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#0A1F44] px-5 text-sm font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:bg-[#7C5C3B]"
                 href={content.location.mapsUrl}
                 rel="noreferrer"
                 target="_blank"
               >
                 {localized(content.location.mapsButton, t.googleMaps)}
               </a>
-              <a
-                className="inline-flex min-h-12 items-center justify-center rounded border border-[#0A1F44]/20 px-5 text-sm font-bold uppercase tracking-[0.12em] text-[#0A1F44] transition hover:border-[#7C5C3B] hover:text-[#7C5C3B]"
-                href="#contact"
-              >
-                {localized(content.location.contactButton, t.contactOrganizer)}
-              </a>
             </div>
           </div>
-          <div className="min-h-[22rem] overflow-hidden rounded border border-[#0A1F44]/10 bg-[#BDBFBA]/25">
+          <div className="order-1 min-h-[16rem] overflow-hidden rounded-[1.5rem] border border-[#0A1F44]/10 bg-[#BDBFBA]/25 lg:order-2 lg:min-h-[22rem]">
             <iframe
               aria-label="Map to Pearl Wedding Avenue"
-              className="h-full min-h-[22rem] w-full"
+              className="h-full min-h-[16rem] w-full lg:min-h-[22rem]"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               src={content.location.mapsEmbedUrl}
               title="Pearl Wedding Avenue map"
             />
           </div>
-        </div>
-        <div className="mx-auto mt-10 max-w-7xl rounded border border-[#0A1F44]/10 bg-white/65 p-5 shadow-[0_18px_60px_rgba(10,31,68,0.08)] sm:p-7">
-          <h3 className="mb-5 text-sm font-bold uppercase tracking-[0.18em] text-[#7C5C3B]">
+        </ScrollReveal>
+        <ScrollReveal className="mx-auto mt-10 max-w-7xl border-t border-[#0A1F44]/15 pt-8">
+          <h3 className="mb-5 text-xs font-bold uppercase tracking-[0.2em] text-[#7C5C3B]">
             {localized(content.location.transportTitle, t.transportTitle)}
           </h3>
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="max-w-4xl divide-y divide-[#0A1F44]/15 border-y border-[#0A1F44]/15">
             {transportSections.map((section) => (
-              <article key={section.id}>
-                <h4 className="text-lg font-semibold text-[#0A1F44]">{localized(section.title, section.id)}</h4>
-                <ul className="mt-4 space-y-3 text-sm leading-6 text-[#0A1F44]/72">
-                  {section.items.map((item, index) => (
-                    <li className="border-l border-[#D6C8A5] pl-4" key={`${section.id}-${index}`}>
-                      {localized(item, "")}
-                    </li>
-                  ))}
-                </ul>
-              </article>
+                <details className="group" key={section.id}>
+                  <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-4 text-base font-semibold text-[#0A1F44] marker:content-none sm:text-lg">
+                    <span>{localized(section.title, section.id)}</span>
+                    <span
+                      aria-hidden="true"
+                      className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#0A1F44]/20 text-lg font-normal text-[#7C5C3B] transition group-open:rotate-45"
+                    >
+                      +
+                    </span>
+                  </summary>
+                  <ul className="max-w-3xl space-y-3 pb-6 pl-8 text-sm leading-6 text-[#0A1F44]/72 sm:pl-9">
+                    {section.items.map((item, itemIndex) => (
+                      <li className="relative pl-5" key={`${section.id}-${itemIndex}`}>
+                        <span aria-hidden="true" className="absolute left-0 top-[0.7em] h-1.5 w-1.5 rounded-full bg-[#D6C8A5]" />
+                        {localized(item, "")}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
             ))}
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
-      <section className="bg-white/55 px-4 py-16 sm:px-6 lg:px-8" id="dress-code">
-        <div className="mx-auto max-w-7xl">
+      <section className="scroll-mt-24 bg-white/55 px-4 py-16 sm:px-6 lg:px-8" id="dress-code">
+        <ScrollReveal className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
             <div>
               <SectionLabel>{localized(content.dressCode.eyebrow, t.dressEyebrow)}</SectionLabel>
@@ -772,13 +798,13 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
               </div>
             </div>
 
-            <div className="rounded border border-[#0A1F44]/10 bg-[#FBF8F0] p-5 sm:p-6">
+            <div className="rounded-[1.5rem] border border-[#0A1F44]/10 bg-[#FBF8F0] p-5 sm:p-6">
               <div className="mb-5 flex items-end justify-between gap-4">
                 <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#0A1F44]/60">
                   {localized(content.dressCode.paletteTitle, t.paletteTitle)}
                 </h3>
               </div>
-              <div className="grid gap-3 sm:grid-cols-5">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                 {content.dressCode.colors.map((color) => (
                   <div
                     className="grid grid-cols-[4.5rem_1fr] items-center gap-3 sm:block sm:space-y-3"
@@ -786,7 +812,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
                   >
                     <div
                       aria-label={`${color.name} color swatch`}
-                      className="h-16 rounded border border-[#0A1F44]/10 shadow-inner sm:h-44"
+                      className="h-28 rounded border border-[#0A1F44]/10 shadow-inner sm:h-44"
                       style={{ backgroundColor: color.hex }}
                     />
                     <div>
@@ -800,43 +826,45 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
               </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
-      <section className="px-4 py-16 sm:px-6 lg:px-8" id="rsvp">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-          <div>
+      <section className="scroll-mt-24 bg-[#0A1F44] px-4 py-20 text-[#FBF8F0] sm:px-6 lg:px-8" id="rsvp">
+        <ScrollReveal className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
+          <div className="lg:pt-5">
             <SectionLabel>{localized(content.rsvp.eyebrow, t.rsvpEyebrow)}</SectionLabel>
             <h2 className="luxury-heading text-3xl font-semibold leading-tight md:text-4xl">
               {localized(content.rsvp.title, t.rsvpTitle)}
             </h2>
-            <p className="mt-5 text-lg leading-8 text-[#0A1F44]/72">
+            <p className="mt-5 text-lg leading-8 text-[#FBF8F0]/70">
               {localized(content.rsvp.intro, t.rsvpIntro)}
             </p>
           </div>
-          <RsvpForm language={language} relationshipOptions={content.rsvp.relationshipOptions} />
-        </div>
+          <div className="rounded-[1.5rem] bg-[#FBF8F0] p-4 text-[#0A1F44] shadow-[0_24px_80px_rgba(0,0,0,0.18)] sm:p-7">
+            <RsvpForm language={language} relationshipOptions={content.rsvp.relationshipOptions} />
+          </div>
+        </ScrollReveal>
       </section>
 
-      <section className="bg-white/55 px-4 py-16 sm:px-6 lg:px-8" id="faq">
-        <div className="mx-auto max-w-5xl">
+      <section className="scroll-mt-24 bg-white/55 px-4 py-16 sm:px-6 lg:px-8" id="faq">
+        <ScrollReveal className="mx-auto max-w-5xl">
           <SectionHeader eyebrow={localized(content.faq.eyebrow, t.faqEyebrow)} title={localized(content.faq.title, t.faqTitle)} />
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="mx-auto max-w-3xl border-y border-[#0A1F44]/15">
             {faqItems.map((item) => (
-              <article
-                className="rounded border border-[#0A1F44]/10 bg-[#FBF8F0] p-5 shadow-[0_16px_50px_rgba(10,31,68,0.06)]"
-                key={item.id}
-              >
-                <h3 className="text-base font-semibold text-[#0A1F44]">{localized(item.question, item.id)}</h3>
-                <p className="mt-3 text-sm leading-6 text-[#0A1F44]/70">{localized(item.answer, "")}</p>
-              </article>
+              <details className="group border-b border-[#0A1F44]/15 py-5 last:border-0" key={item.id}>
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold text-[#0A1F44] marker:content-none">
+                  {localized(item.question, item.id)}
+                  <span aria-hidden="true" className="text-xl font-normal text-[#7C5C3B] transition group-open:rotate-45">+</span>
+                </summary>
+                <p className="max-w-2xl pt-3 text-sm leading-6 text-[#0A1F44]/70">{localized(item.answer, "")}</p>
+              </details>
             ))}
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
-      <section className="bg-[#3E4D3A] px-4 py-16 text-[#FBF8F0] sm:px-6 lg:px-8" id="contact">
-        <div className="mx-auto max-w-5xl text-center">
+      <section className="scroll-mt-24 bg-[#3E4D3A] px-4 py-16 text-[#FBF8F0] sm:px-6 lg:px-8" id="contact">
+        <ScrollReveal className="mx-auto max-w-5xl text-center">
           <SectionLabel>{localized(content.contact.eyebrow, t.contactEyebrow)}</SectionLabel>
           <h2 className="luxury-heading text-3xl font-semibold md:text-4xl">
             {localized(content.contact.title, t.contactTitle)}
@@ -847,7 +875,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <a
               aria-label="Add LINE Official @990yroaq as a friend"
-              className="inline-flex min-h-14 items-center justify-center gap-3 rounded border border-white/18 bg-white/8 px-5 font-semibold transition hover:bg-white/14"
+              className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full border border-white/18 bg-white/8 px-5 font-semibold transition hover:bg-white/14"
               href={content.contact.lineUrl}
               rel="noreferrer"
               target="_blank"
@@ -856,14 +884,14 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
               {localized(content.contact.lineLabel, t.contactLineLabel)}
             </a>
             <a
-              className="inline-flex min-h-14 items-center justify-center gap-3 rounded border border-white/18 bg-white/8 px-5 font-semibold transition hover:bg-white/14"
+              className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full border border-white/18 bg-white/8 px-5 font-semibold transition hover:bg-white/14"
               href={content.contact.phoneHref}
             >
               <Phone aria-hidden="true" size={20} />
               {localized(content.contact.phoneLabel, "Phone: 099-656-7965")}
             </a>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       <footer className="bg-[#0A1F44] px-4 py-10 text-center text-[#FBF8F0] sm:px-6 lg:px-8">
@@ -875,7 +903,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
 
       <nav
         aria-label="Quick actions"
-        className="fixed inset-x-3 bottom-3 z-50 grid grid-cols-4 overflow-hidden rounded border border-[#0A1F44]/10 bg-[#FBF8F0]/95 text-[#0A1F44] shadow-[0_18px_50px_rgba(10,31,68,0.22)] backdrop-blur md:hidden"
+        className="fixed inset-x-3 bottom-3 z-50 grid grid-cols-4 overflow-hidden rounded-2xl border border-[#0A1F44]/10 bg-[#FBF8F0]/95 text-[#0A1F44] shadow-[0_18px_50px_rgba(10,31,68,0.22)] backdrop-blur md:hidden"
       >
         {bottomNavItems.map((item) => {
           const Icon = item.icon;

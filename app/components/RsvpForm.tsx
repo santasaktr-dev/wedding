@@ -200,7 +200,7 @@ function TextInput({
     <label className="block">
       <span className="mb-2 block text-sm font-semibold text-[#0A1F44]">{label}</span>
       <input
-        className="min-h-12 w-full rounded border border-[#0A1F44]/15 bg-white/85 px-4 text-base text-[#0A1F44] outline-none transition focus:border-[#7C5C3B] focus:ring-2 focus:ring-[#D6C8A5]/35"
+        className="min-h-12 w-full rounded-xl border border-[#0A1F44]/15 bg-white/85 px-4 text-base text-[#0A1F44] outline-none transition focus:border-[#7C5C3B] focus:ring-2 focus:ring-[#D6C8A5]/35"
         name={name}
         placeholder={placeholder}
         required={required}
@@ -273,7 +273,7 @@ export function RsvpForm({
 
   return (
     <form
-      className="rounded border border-[#0A1F44]/10 bg-white/75 p-5 shadow-[0_22px_70px_rgba(10,31,68,0.09)] sm:p-7"
+      className="rounded-[1.5rem] border border-[#0A1F44]/10 bg-white/75 p-5 shadow-[0_22px_70px_rgba(10,31,68,0.09)] sm:p-7"
       onSubmit={handleSubmit}
     >
       <div className="grid gap-5 sm:grid-cols-2">
@@ -284,7 +284,7 @@ export function RsvpForm({
         <label className="block">
           <span className="mb-2 block text-sm font-semibold text-[#0A1F44]">{c.relationship}</span>
           <select
-            className="min-h-12 w-full rounded border border-[#0A1F44]/15 bg-white/85 px-4 text-base text-[#0A1F44] outline-none transition focus:border-[#7C5C3B] focus:ring-2 focus:ring-[#D6C8A5]/35"
+            className="min-h-12 w-full rounded-xl border border-[#0A1F44]/15 bg-white/85 px-4 text-base text-[#0A1F44] outline-none transition focus:border-[#7C5C3B] focus:ring-2 focus:ring-[#D6C8A5]/35"
             defaultValue=""
             name="relationship"
             required
@@ -302,7 +302,7 @@ export function RsvpForm({
         <label className="block">
           <span className="mb-2 block text-sm font-semibold text-[#0A1F44]">{c.attendance}</span>
           <select
-            className="min-h-12 w-full rounded border border-[#0A1F44]/15 bg-white/85 px-4 text-base text-[#0A1F44] outline-none transition focus:border-[#7C5C3B] focus:ring-2 focus:ring-[#D6C8A5]/35"
+            className="min-h-12 w-full rounded-xl border border-[#0A1F44]/15 bg-white/85 px-4 text-base text-[#0A1F44] outline-none transition focus:border-[#7C5C3B] focus:ring-2 focus:ring-[#D6C8A5]/35"
             defaultValue=""
             name="attendance"
             required
@@ -320,7 +320,7 @@ export function RsvpForm({
         <label className="block">
           <span className="mb-2 block text-sm font-semibold text-[#0A1F44]">{c.guestCount}</span>
           <select
-            className="min-h-12 w-full rounded border border-[#0A1F44]/15 bg-white/85 px-4 text-base text-[#0A1F44] outline-none transition focus:border-[#7C5C3B] focus:ring-2 focus:ring-[#D6C8A5]/35"
+            className="min-h-12 w-full rounded-xl border border-[#0A1F44]/15 bg-white/85 px-4 text-base text-[#0A1F44] outline-none transition focus:border-[#7C5C3B] focus:ring-2 focus:ring-[#D6C8A5]/35"
             defaultValue="1 คน"
             name="guest_count"
             required
@@ -338,21 +338,21 @@ export function RsvpForm({
           {c.message}
         </span>
         <textarea
-          className="min-h-32 w-full resize-y rounded border border-[#0A1F44]/15 bg-white/85 px-4 py-3 text-base text-[#0A1F44] outline-none transition focus:border-[#7C5C3B] focus:ring-2 focus:ring-[#D6C8A5]/35"
+          className="min-h-32 w-full resize-y rounded-xl border border-[#0A1F44]/15 bg-white/85 px-4 py-3 text-base text-[#0A1F44] outline-none transition focus:border-[#7C5C3B] focus:ring-2 focus:ring-[#D6C8A5]/35"
           name="message"
           placeholder={c.messagePlaceholder}
         />
       </label>
       {message && submitState !== "success" ? (
         <div
-          className="mt-5 rounded border border-[#7C5C3B]/25 bg-[#7C5C3B]/10 p-4 text-sm leading-6 text-[#7C5C3B]"
+          className="mt-5 rounded-xl border border-[#7C5C3B]/25 bg-[#7C5C3B]/10 p-4 text-sm leading-6 text-[#7C5C3B]"
           role="status"
         >
           <p>{message}</p>
         </div>
       ) : null}
       <button
-        className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded bg-[#0A1F44] px-6 text-sm font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:bg-[#7C5C3B] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#0A1F44] px-6 text-sm font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:bg-[#7C5C3B] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         disabled={submitState === "submitting"}
         type="submit"
       >
@@ -365,7 +365,7 @@ export function RsvpForm({
           className="fixed inset-0 z-[80] flex items-center justify-center bg-[#0A1F44]/65 px-4 py-8 backdrop-blur-sm"
           role="dialog"
         >
-          <div className="w-full max-w-lg rounded border border-[#0A1F44]/10 bg-[#FBF8F0] p-6 text-[#0A1F44] shadow-[0_30px_90px_rgba(10,31,68,0.28)] sm:p-8">
+          <div className="w-full max-w-lg rounded-[1.5rem] border border-[#0A1F44]/10 bg-[#FBF8F0] p-6 text-[#0A1F44] shadow-[0_30px_90px_rgba(10,31,68,0.28)] sm:p-8">
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#7C5C3B]">
               {c.modalEyebrow}
             </p>
@@ -379,13 +379,13 @@ export function RsvpForm({
               {c.modalText}
             </p>
             {reference ? (
-              <p className="mt-4 rounded border border-[#D6C8A5]/70 bg-[#D6C8A5]/20 px-4 py-3 text-sm font-semibold">
+              <p className="mt-4 rounded-xl border border-[#D6C8A5]/70 bg-[#D6C8A5]/20 px-4 py-3 text-sm font-semibold">
                 {c.reference}: {reference}
               </p>
             ) : null}
             <div className="mt-7 flex flex-col gap-3">
               <a
-                className="inline-flex min-h-12 items-center justify-center rounded bg-[#0A1F44] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:bg-[#7C5C3B]"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#0A1F44] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:bg-[#7C5C3B]"
                 href={googleCalendarUrl.toString()}
                 rel="noreferrer"
                 target="_blank"
@@ -393,7 +393,7 @@ export function RsvpForm({
                 {c.googleCalendar}
               </a>
               <a
-                className="inline-flex min-h-12 items-center justify-center rounded border border-[#0A1F44]/20 px-5 text-xs font-bold uppercase tracking-[0.12em] text-[#0A1F44] transition hover:border-[#7C5C3B] hover:text-[#7C5C3B]"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#0A1F44]/20 px-5 text-xs font-bold uppercase tracking-[0.12em] text-[#0A1F44] transition hover:border-[#7C5C3B] hover:text-[#7C5C3B]"
                 download="jajah-smart-wedding.ics"
                 href={appleCalendarHref}
               >
