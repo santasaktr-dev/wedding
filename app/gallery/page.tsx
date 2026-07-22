@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
 import { getPublicGalleryAlbums } from "../../lib/cms/server";
@@ -15,19 +14,20 @@ export default async function GalleryPage({ searchParams = Promise.resolve({}) }
       lang={isThai ? "th" : "en"}
       style={isThai ? { fontFamily: "var(--font-kanit), ui-sans-serif, system-ui, sans-serif" } : undefined}
     >
-      <header className="border-b border-[#0A1F44]/10 bg-[#FBF8F0]/90 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
+      <header className="border-b border-[#0A1F44]/10 bg-[#FBF8F0]/90 px-4 py-3.5 backdrop-blur sm:px-6 lg:px-8">
         <nav className="mx-auto flex max-w-7xl items-center justify-between" aria-label="Gallery navigation">
-          <Link className="script-display text-2xl font-semibold leading-none" href="/">
+          <Link
+            aria-label={isThai ? "กลับเว็บไซต์" : "Back to website"}
+            className="gallery-brand-link script-display text-2xl font-semibold leading-none transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7C5C3B]"
+            href="/#gallery"
+          >
             J&S
           </Link>
-          <div className="ml-auto flex items-center gap-2" data-testid="gallery-header-actions">
+          <div className="ml-auto flex items-center gap-3" data-testid="gallery-header-actions">
             <Link
-              className="inline-flex min-h-10 items-center rounded border border-[#0A1F44]/15 px-3 text-sm font-bold uppercase tracking-[0.12em] transition hover:border-[#7C5C3B] hover:text-[#7C5C3B] sm:px-4"
-              href="/#gallery"
+              className="rounded-full px-2.5 py-2 text-xs font-semibold tracking-[0.08em] text-[#0A1F44]/65 transition hover:bg-[#D6C8A5]/20 hover:text-[#7C5C3B] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7C5C3B] sm:text-sm"
+              href={isThai ? "/gallery" : "/gallery?lang=th"}
             >
-              {isThai ? "กลับหน้าแรก" : "Back"}
-            </Link>
-            <Link className="px-2 text-sm font-semibold" href={isThai ? "/gallery" : "/gallery?lang=th"}>
               {isThai ? "EN" : "ไทย"}
             </Link>
           </div>
@@ -36,19 +36,31 @@ export default async function GalleryPage({ searchParams = Promise.resolve({}) }
 
       <section className="px-4 py-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#7C5C3B]">
-              {isThai ? "แกลเลอรี" : "Gallery"}
-            </p>
-            <h1 className="luxury-heading text-4xl font-semibold leading-tight md:text-5xl">
-              {isThai ? "อัลบั้มของ Jajah & Smart" : "Jajah & Smart Albums"}
-            </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#0A1F44]/70">
+          <div className="mb-12">
+            <nav aria-label={isThai ? "เส้นทางหน้า" : "Breadcrumb"} className="text-xs font-semibold tracking-[0.08em] text-[#0A1F44]/50" data-testid="gallery-breadcrumb">
+              <Link className="transition-colors hover:text-[#7C5C3B]" href="/#gallery">
+                J&amp;S
+              </Link>
+              <span className="px-2 text-[#7C5C3B]/65">/</span>
+              <span>{isThai ? "แกลเลอรี" : "Gallery"}</span>
+            </nav>
+          </div>
+
+          <div className="grid items-end gap-8 border-b border-[#0A1F44]/10 pb-12 md:grid-cols-[1.05fr_0.95fr] md:gap-16">
+            <div>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#7C5C3B]">
+                {isThai ? "แกลเลอรี" : "Gallery"}
+              </p>
+              <h1 className="luxury-heading max-w-3xl text-4xl font-semibold leading-tight md:text-6xl">
+                {isThai ? "อัลบั้มของ Jajah & Smart" : "Jajah & Smart Albums"}
+              </h1>
+            </div>
+            <p className="max-w-xl text-base leading-8 text-[#0A1F44]/70 md:justify-self-end md:text-lg">
               {isThai ? "รวมภาพพรีเวดดิ้งของเรา และสามารถเพิ่มอัลบั้มวันงานได้หลังจบการเฉลิมฉลอง" : "A fuller collection of prewedding images. Wedding day albums can be added here after the celebration."}
             </p>
           </div>
 
-          <div className="mt-12 space-y-14">
+          <div className="mt-14 space-y-16">
             {albums.map((album) => (
               <section
                 className="border-t border-[#0A1F44]/10 pt-8"

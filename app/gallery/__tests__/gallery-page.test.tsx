@@ -50,11 +50,16 @@ describe("GalleryPage", () => {
     expect(screen.getByRole("img", { name: "Portrait photo" })).not.toHaveClass("object-cover");
   });
 
-  it("keeps gallery actions grouped on the right side of the header", async () => {
+  it("uses the brand link and breadcrumb as quiet gallery navigation", async () => {
     render(await GalleryPage());
 
+    const brandLink = screen.getByRole("link", { name: "Back to website" });
+
     expect(screen.getByTestId("gallery-header-actions")).toHaveClass("ml-auto");
-    expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute("href", "/#gallery");
+    expect(brandLink).toHaveAttribute("href", "/#gallery");
+    expect(brandLink).toHaveClass("gallery-brand-link");
+    expect(screen.queryByRole("link", { name: "Back to website", exact: true })).toBe(brandLink);
+    expect(screen.getByTestId("gallery-breadcrumb")).toHaveTextContent(/J&S\s*\/\s*Gallery/);
   });
 
   it("applies the Thai font styling when the Thai gallery is selected", async () => {
