@@ -44,6 +44,11 @@ body {
   font-family: var(--font-kanit), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Thai combining marks must stay attached to their base glyphs. */
+.lang-th [class*="tracking-"] {
+  letter-spacing: normal !important;
+}
+
 .lang-th .luxury-heading {
   font-family: var(--font-kanit), ui-sans-serif, system-ui, sans-serif;
   text-transform: none;
