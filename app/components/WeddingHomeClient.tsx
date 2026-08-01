@@ -452,6 +452,8 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
   const heroCarouselRef = useRef<HTMLDivElement>(null);
   const heroCarouselIndexRef = useRef(0);
   const isThai = language === "th";
+  const galleryInteractionHint = isThai ? "เลื่อนดูอัลบั้ม · แตะการ์ดเพื่อดูรูปทั้งหมด" : "Swipe through albums · Tap a card to view every photo";
+  const galleryAlbumCta = isThai ? "ดูอัลบั้ม" : "View album";
   const languageStyle = isThai
     ? ({
         "--font-cinzel": "var(--font-kanit)",
@@ -555,7 +557,18 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
             </button>
           </div>
         </nav>
-        {isMobileMenuOpen ? <div className="absolute inset-x-0 top-full z-[60] flex min-h-[calc(100svh-4rem)] flex-col overflow-y-auto border-t border-[#D6C8A5] bg-[#FBF8F0] px-4 py-6 text-[#0A1F44] shadow-[0_18px_40px_rgba(10,31,68,0.18)] md:hidden"><p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#7C5C3B]">Explore</p><div className="grid">{navItems.map((item) => <a className="flex min-h-14 items-center border-b border-[#0A1F44]/12 text-base font-semibold transition hover:bg-[#D6C8A5]/30" href={item.href} key={item.href} onClick={() => setIsMobileMenuOpen(false)}>{isThai && item.id === "faq" ? "คำถามที่พบบ่อย" : localized(item.label, item.id)}<span aria-hidden className="ml-auto pr-1 text-[#7C5C3B]">→</span></a>)}</div><p className="mt-auto pt-8 text-center text-xs font-semibold uppercase tracking-[0.18em] text-[#7C5C3B]">{coupleName} · {localized(hero.date, t.heroDate)}</p></div> : null}
+        {isMobileMenuOpen ? <div className="absolute inset-x-0 top-full z-[60] flex min-h-[calc(100svh-4rem)] flex-col overflow-y-auto border-t border-[#D6C8A5] bg-[#FBF8F0] px-4 py-6 text-[#0A1F44] shadow-[0_18px_40px_rgba(10,31,68,0.18)] md:hidden">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#7C5C3B]">Explore</p>
+          <div className="grid">
+            {navItems.filter((item) => item.href !== "#rsvp").map((item) => <a className="flex min-h-14 items-center border-b border-[#0A1F44]/12 text-base font-semibold transition hover:bg-[#D6C8A5]/30" href={item.href} key={item.href} onClick={() => setIsMobileMenuOpen(false)}>{isThai && item.id === "faq" ? "คำถามที่พบบ่อย" : localized(item.label, item.id)}<span aria-hidden className="ml-auto pr-1 text-[#7C5C3B]">→</span></a>)}
+          </div>
+          <a className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#D6C8A5] px-5 text-sm font-bold uppercase tracking-[0.12em] text-[#0A1F44] transition hover:bg-[#C6B78F]" data-testid="mobile-menu-rsvp" href="#rsvp" onClick={() => setIsMobileMenuOpen(false)}>
+            <Users aria-hidden="true" className="mr-2" size={18} />
+            {t.rsvpButton}
+            <span aria-hidden className="ml-2">→</span>
+          </a>
+          <p className="mt-auto pt-8 text-center text-xs font-semibold uppercase tracking-[0.18em] text-[#7C5C3B]">{coupleName} · {localized(hero.date, t.heroDate)}</p>
+        </div> : null}
       </header>
 
       {isLanguagePromptVisible ? (
@@ -589,21 +602,19 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
             <p className="max-w-lg text-lg leading-8 text-[#FBF8F0]/78 md:text-xl">
               {localized(hero.text, t.heroText)}
             </p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-9">
               <a
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#D6C8A5] px-6 text-sm font-bold uppercase tracking-[0.12em] text-[#0A1F44] transition hover:bg-[#FBF8F0]"
-                href="#location"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#D6C8A5] px-6 text-sm font-bold uppercase tracking-[0.12em] text-[#0A1F44] transition hover:bg-[#FBF8F0] sm:w-auto"
+                data-testid="hero-rsvp"
+                href="#rsvp"
               >
-                <MapPin aria-hidden="true" className="mr-2" size={18} />
-                {localized(hero.locationButton, t.locationButton)}
+                <Users aria-hidden="true" className="mr-2" size={18} />
+                {t.rsvpButton}
               </a>
-              <a
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#FBF8F0]/40 px-6 text-sm font-bold uppercase tracking-[0.12em] text-[#FBF8F0] transition hover:border-[#D6C8A5] hover:text-[#D6C8A5]"
-                href="#dress-code"
-              >
-                <Shirt aria-hidden="true" className="mr-2" size={18} />
-                {localized(hero.dressButton, t.dressButton)}
-              </a>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-sm font-semibold text-[#FBF8F0]/75 sm:justify-start" data-testid="hero-utility-links">
+                <a className="inline-flex min-h-11 items-center transition hover:text-[#D6C8A5]" href="#location"><MapPin aria-hidden="true" className="mr-1.5" size={16} />{localized(hero.locationButton, t.locationButton)}</a>
+                <a className="inline-flex min-h-11 items-center transition hover:text-[#D6C8A5]" href="#dress-code"><Shirt aria-hidden="true" className="mr-1.5" size={16} />{localized(hero.dressButton, t.dressButton)}</a>
+              </div>
             </div>
           </div>
 
@@ -706,6 +717,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
               {localized(content.gallery.intro, t.galleryIntro)}
             </p>
           </div>
+          <p className="mb-4 text-sm font-medium text-[#7C5C3B]" data-testid="gallery-interaction-hint">{galleryInteractionHint}</p>
 
           <div className="relative">
             <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" onScroll={(event) => {
@@ -714,13 +726,14 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
             }} ref={albumCarouselRef}>
               {galleryAlbums.map((album) => {
                 const cover = album.images.find((image) => image.id === album.coverImageId) ?? album.images[0];
-                return <a className="group relative min-w-[86%] snap-start overflow-hidden rounded-[1.5rem] border border-[#0A1F44]/10 bg-[#0A1F44] shadow-[0_22px_70px_rgba(10,31,68,0.14)] sm:min-w-[58%] lg:min-w-[42%]" href={`/gallery?album=${album.slug}`} key={album.id}>
+                return <a aria-label={`${localized(album.title, album.slug)} — ${galleryAlbumCta}`} className="group relative min-w-[86%] snap-start overflow-hidden rounded-[1.5rem] border border-[#0A1F44]/10 bg-[#0A1F44] shadow-[0_22px_70px_rgba(10,31,68,0.14)] sm:min-w-[58%] lg:min-w-[42%]" data-testid="gallery-album-link" href={`/gallery?album=${album.slug}`} key={album.id}>
                   <div className="relative aspect-[4/5] sm:aspect-[16/11]">
                     <Image alt={cover.alt[language]} className="object-cover opacity-95 transition duration-500 group-hover:scale-[1.025]" fill sizes="(min-width: 1024px) 42vw, (min-width: 640px) 58vw, 86vw" src={cover.publicUrl} />
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0A1F44]/90 to-transparent p-5 pt-24 text-[#FBF8F0]">
                       <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#D6C8A5]">{localized(content.gallery.albumLabel, t.galleryAlbumLabel)}</p>
                       <h3 className="luxury-heading mt-2 text-2xl font-semibold">{localized(album.title, album.slug)}</h3>
                       <p className="mt-2 text-sm text-white/75">{album.images.length} {t.galleryPhotoCount}</p>
+                      <span className="mt-4 inline-flex items-center border-b border-[#D6C8A5]/70 pb-1 text-sm font-bold text-[#FBF8F0]">{galleryAlbumCta}<span aria-hidden className="ml-2">→</span></span>
                     </div>
                   </div>
                 </a>;
@@ -874,56 +887,53 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
         </ScrollReveal>
       </section>
 
-      <section className="scroll-mt-24 bg-white/55 px-4 py-16 sm:px-6 lg:px-8" id="faq">
-        <ScrollReveal className="mx-auto max-w-5xl">
-          <SectionHeader eyebrow={localized(content.faq.eyebrow, t.faqEyebrow)} title={localized(content.faq.title, t.faqTitle)} />
-          <div className="mx-auto max-w-3xl border-y border-[#0A1F44]/15">
-            {faqItems.map((item) => (
-              <details className="group border-b border-[#0A1F44]/15 py-5 last:border-0" key={item.id}>
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold text-[#0A1F44] marker:content-none">
-                  {localized(item.question, item.id)}
-                  <span aria-hidden="true" className="text-xl font-normal text-[#7C5C3B] transition group-open:rotate-45">+</span>
-                </summary>
-                <p className="max-w-2xl pt-3 text-sm leading-6 text-[#0A1F44]/70">{localized(item.answer, "")}</p>
-              </details>
-            ))}
-          </div>
-        </ScrollReveal>
-      </section>
+      <section className="bg-white/55 px-4 py-12 sm:px-6 lg:px-8" data-testid="secondary-information">
+        <ScrollReveal className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+          <section className="scroll-mt-24" id="faq">
+            <SectionLabel>{localized(content.faq.eyebrow, t.faqEyebrow)}</SectionLabel>
+            <h2 className="luxury-heading text-2xl font-semibold text-[#0A1F44] md:text-3xl">{localized(content.faq.title, t.faqTitle)}</h2>
+            <div className="mt-5 border-y border-[#0A1F44]/15">
+              {faqItems.map((item) => (
+                <details className="group border-b border-[#0A1F44]/15 py-4 last:border-0" key={item.id}>
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-[#0A1F44] marker:content-none sm:text-base">
+                    {localized(item.question, item.id)}
+                    <span aria-hidden="true" className="text-xl font-normal text-[#7C5C3B] transition group-open:rotate-45">+</span>
+                  </summary>
+                  <p className="max-w-2xl pt-3 text-sm leading-6 text-[#0A1F44]/70">{localized(item.answer, "")}</p>
+                </details>
+              ))}
+            </div>
+          </section>
 
-      <section className="scroll-mt-24 bg-[#3E4D3A] px-4 py-16 text-[#FBF8F0] sm:px-6 lg:px-8" id="contact">
-        <ScrollReveal className="mx-auto max-w-5xl text-center">
-          <SectionLabel>{localized(content.contact.eyebrow, t.contactEyebrow)}</SectionLabel>
-          <h2 className="luxury-heading text-3xl font-semibold md:text-4xl">
-            {localized(content.contact.title, t.contactTitle)}
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#FBF8F0]/75">
-            {localized(content.contact.intro, t.contactIntro)}
-          </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <a
-              aria-label="Add LINE Official @990yroaq as a friend"
-              className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full border border-white/18 bg-white/8 px-5 font-semibold transition hover:bg-white/14"
-              href={content.contact.lineUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              <MessageCircle aria-hidden="true" size={20} />
-              {localized(content.contact.lineLabel, t.contactLineLabel)}
-            </a>
-            <a
-              className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full border border-white/18 bg-white/8 px-5 font-semibold transition hover:bg-white/14"
-              href={content.contact.phoneHref}
-            >
-              <Phone aria-hidden="true" size={20} />
-              {localized(content.contact.phoneLabel, "Phone: 099-656-7965")}
-            </a>
-          </div>
+          <aside className="scroll-mt-24 rounded-[1.5rem] bg-[#3E4D3A] p-6 text-[#FBF8F0] sm:p-8" id="contact">
+            <SectionLabel>{localized(content.contact.eyebrow, t.contactEyebrow)}</SectionLabel>
+            <h2 className="luxury-heading text-2xl font-semibold md:text-3xl">{localized(content.contact.title, t.contactTitle)}</h2>
+            <p className="mt-4 text-base leading-7 text-[#FBF8F0]/75">{localized(content.contact.intro, t.contactIntro)}</p>
+            <div className="mt-6 grid gap-3">
+              <a
+                aria-label="Add LINE Official @990yroaq as a friend"
+                className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-white/18 bg-white/8 px-5 text-sm font-semibold transition hover:bg-white/14"
+                href={content.contact.lineUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <MessageCircle aria-hidden="true" size={19} />
+                {localized(content.contact.lineLabel, t.contactLineLabel)}
+              </a>
+              <a
+                className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-white/18 bg-white/8 px-5 text-sm font-semibold transition hover:bg-white/14"
+                href={content.contact.phoneHref}
+              >
+                <Phone aria-hidden="true" size={19} />
+                {localized(content.contact.phoneLabel, "Phone: 099-656-7965")}
+              </a>
+            </div>
+          </aside>
         </ScrollReveal>
       </section>
 
       <footer className="bg-[#0A1F44] px-4 py-10 text-center text-[#FBF8F0] sm:px-6 lg:px-8">
-        <p className="script-display text-4xl font-medium">{normalizeBrandName(content.footer.coupleName)}</p>
+        <p className="script-display text-4xl font-medium">{(content.footer.coupleName || "Jajah & Smart").replaceAll("JaJah", "Jajah")}</p>
         <p className="mt-2 text-sm uppercase tracking-[0.22em] text-[#D6C8A5]">
           {localized(content.footer.details, "1 November 2026 · Pearl Wedding Avenue")}
         </p>

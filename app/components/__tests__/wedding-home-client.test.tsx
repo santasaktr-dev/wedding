@@ -104,6 +104,16 @@ describe("WeddingHomeClient", () => {
     expect(screen.getByTestId("header-rsvp")).toHaveClass("hidden");
   });
 
+  it("gives RSVP a single prominent action in the hero", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    const rsvpLink = screen.getByTestId("hero-rsvp");
+    expect(rsvpLink).toHaveAttribute("href", "#rsvp");
+    expect(rsvpLink).toHaveClass("w-full");
+    expect(screen.getByTestId("hero-utility-links")).toHaveTextContent("View Location");
+    expect(screen.getByTestId("hero-utility-links")).toHaveTextContent("Dress Code");
+  });
+
   it("locks page scrolling while the mobile navigation is open", () => {
     render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
 
@@ -114,6 +124,23 @@ describe("WeddingHomeClient", () => {
     fireEvent.click(screen.getByRole("button", { name: "Close menu" }));
 
     expect(document.body.style.overflow).toBe("");
+  });
+
+  it("separates RSVP as the primary action in the mobile menu", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
+
+    const menuRsvp = screen.getByTestId("mobile-menu-rsvp");
+    expect(menuRsvp).toHaveAttribute("href", "#rsvp");
+    expect(menuRsvp).toHaveTextContent("RSVP");
+  });
+
+  it("makes album cards visibly actionable", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    expect(screen.getByTestId("gallery-interaction-hint")).toHaveTextContent("Tap a card to view every photo");
+    expect(screen.getAllByTestId("gallery-album-link")[0]).toHaveTextContent("View album");
   });
 
   it("offers Thai as a non-blocking first-visit preference for Thai-language devices", () => {
@@ -184,7 +211,7 @@ describe("WeddingHomeClient", () => {
     expect(screen.getByTestId("hero-carousel").querySelectorAll("span")).toHaveLength(0);
   });
 
-  it("uses Jajah for the hero script while normalizing CMS copy elsewhere", () => {
+  it("uses Jajah for the hero and footer script treatment while normalizing CMS copy elsewhere", () => {
     const snapshot = structuredClone(fallbackCmsSnapshot) as CmsSnapshot;
     snapshot.content.hero.coupleName = "Jajah & Smart";
     snapshot.content.footer.coupleName = "Jajah & Smart";
@@ -193,7 +220,7 @@ describe("WeddingHomeClient", () => {
 
     const heroName = screen.getByRole("heading", { name: "Jajah & Smart" });
     expect(heroName).toHaveClass("text-6xl");
-    expect(screen.getByText("JaJah & Smart", { selector: "p" })).toBeInTheDocument();
+    expect(screen.getByText("Jajah & Smart", { selector: "footer p" })).toBeInTheDocument();
   });
 
   it("uses the script display font for the J&S brand mark", () => {
@@ -222,6 +249,15 @@ describe("WeddingHomeClient", () => {
     ]) {
       expect(document.getElementById(sectionId)).toBeInTheDocument();
     }
+  });
+
+  it("groups FAQ and contact into a compact secondary-information section", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    const secondaryInformation = screen.getByTestId("secondary-information");
+    expect(secondaryInformation).toContainElement(document.getElementById("faq"));
+    expect(secondaryInformation).toContainElement(document.getElementById("contact"));
+    expect(document.getElementById("contact")).toHaveClass("rounded-[1.5rem]");
   });
 
   it("renders transport guidance as an accessible accordion", () => {
