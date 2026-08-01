@@ -79,7 +79,7 @@ describe("GalleryPage", () => {
     expect(screen.getByRole("img", { name: "Portrait photo" })).toHaveClass("h-auto", "w-full");
     const backLink = screen.getByRole("link", { name: /back to home/i });
     expect(backLink).toHaveAttribute("href", "/#gallery");
-    expect(backLink.compareDocumentPosition(screen.getByRole("heading", { name: "Jajah & Smart Albums" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(backLink.compareDocumentPosition(screen.getByRole("heading", { name: "JaJah & Smart Albums" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(backLink.compareDocumentPosition(screen.getByRole("heading", { name: "Highlights" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 

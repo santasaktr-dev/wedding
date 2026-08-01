@@ -22,6 +22,8 @@ import { ScrollReveal } from "./ScrollReveal";
 import { WeddingCountdown } from "./WeddingCountdown";
 
 type Language = "en" | "th";
+const languagePreferenceKey = "wedding-language";
+const normalizeBrandName = (value: string) => value.replaceAll("Jajah", "JaJah");
 
 const icons = {
   date: CalendarDays,
@@ -88,22 +90,22 @@ const copy = {
         images: [
           {
             src: "/images/wedding-hero.png",
-            alt: "Prewedding portrait of Jajah and Smart",
+            alt: "Prewedding portrait of JaJah and Smart",
             caption: "Classic Portrait",
           },
           {
             src: "/images/wedding-hero.png",
-            alt: "Elegant prewedding moment of Jajah and Smart",
+            alt: "Elegant prewedding moment of JaJah and Smart",
             caption: "Refined Moment",
           },
           {
             src: "/images/wedding-hero.png",
-            alt: "Timeless prewedding styling for Jajah and Smart",
+            alt: "Timeless prewedding styling for JaJah and Smart",
             caption: "Old Money Mood",
           },
           {
             src: "/images/wedding-hero.png",
-            alt: "Romantic prewedding detail of Jajah and Smart",
+            alt: "Romantic prewedding detail of JaJah and Smart",
             caption: "Soft Detail",
           },
         ],
@@ -115,7 +117,7 @@ const copy = {
         images: [
           {
             src: "/images/wedding-hero.png",
-            alt: "Studio prewedding portrait of Jajah and Smart",
+            alt: "Studio prewedding portrait of JaJah and Smart",
             caption: "Formal Portrait",
           },
           {
@@ -132,7 +134,7 @@ const copy = {
         images: [
           {
             src: "/images/wedding-hero.png",
-            alt: "Outdoor prewedding moment of Jajah and Smart",
+            alt: "Outdoor prewedding moment of JaJah and Smart",
             caption: "Garden Mood",
           },
           {
@@ -225,7 +227,7 @@ const copy = {
     languageButton: "EN",
     rsvpButton: "ตอบรับ",
     heroDate: "วันอาทิตย์ที่ 1 พฤศจิกายน 2569",
-    heroText: "เรียนเชิญร่วมเป็นเกียรติในงานฉลองมงคลสมรสของ Jajah & Smart ณ Pearl Wedding Avenue",
+    heroText: "เรียนเชิญร่วมเป็นเกียรติในงานฉลองมงคลสมรสของ JaJah & Smart ณ Pearl Wedding Avenue",
     locationButton: "ดูแผนที่",
     dressButton: "ธีมการแต่งกาย",
     eventEyebrow: "ข้อมูลสำคัญ",
@@ -265,22 +267,22 @@ const copy = {
         images: [
           {
             src: "/images/wedding-hero.png",
-            alt: "ภาพพรีเวดดิ้งของ Jajah และ Smart",
+            alt: "ภาพพรีเวดดิ้งของ JaJah และ Smart",
             caption: "ภาพพอร์ตเทรต",
           },
           {
             src: "/images/wedding-hero.png",
-            alt: "โมเมนต์พรีเวดดิ้งของ Jajah และ Smart",
+            alt: "โมเมนต์พรีเวดดิ้งของ JaJah และ Smart",
             caption: "โมเมนต์เรียบหรู",
           },
           {
             src: "/images/wedding-hero.png",
-            alt: "สไตล์พรีเวดดิ้งโทน Old Money ของ Jajah และ Smart",
+            alt: "สไตล์พรีเวดดิ้งโทน Old Money ของ JaJah และ Smart",
             caption: "บรรยากาศ Old Money",
           },
           {
             src: "/images/wedding-hero.png",
-            alt: "รายละเอียดภาพพรีเวดดิ้งของ Jajah และ Smart",
+            alt: "รายละเอียดภาพพรีเวดดิ้งของ JaJah และ Smart",
             caption: "รายละเอียดนุ่มนวล",
           },
         ],
@@ -292,7 +294,7 @@ const copy = {
         images: [
           {
             src: "/images/wedding-hero.png",
-            alt: "ภาพพรีเวดดิ้งในสตูดิโอของ Jajah และ Smart",
+            alt: "ภาพพรีเวดดิ้งในสตูดิโอของ JaJah และ Smart",
             caption: "พอร์ตเทรตทางการ",
           },
           {
@@ -309,7 +311,7 @@ const copy = {
         images: [
           {
             src: "/images/wedding-hero.png",
-            alt: "โมเมนต์พรีเวดดิ้งกลางแจ้งของ Jajah และ Smart",
+            alt: "โมเมนต์พรีเวดดิ้งกลางแจ้งของ JaJah และ Smart",
             caption: "บรรยากาศสวน",
           },
           {
@@ -423,9 +425,11 @@ function SectionHeader({
 export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
   const [language, setLanguage] = useState<Language>("en");
   const t = copy[language];
-  const localized = (value: Record<Language, string>, fallback: string) => value[language] || fallback;
+  const localized = (value: Record<Language, string>, fallback: string) => normalizeBrandName(value[language] || fallback);
   const content = snapshot.content;
   const hero = content.hero;
+  const coupleName = normalizeBrandName(hero.coupleName || "JaJah & Smart");
+  const heroDisplayName = (hero.coupleName || "Jajah & Smart").replaceAll("JaJah", "Jajah");
   const heroImageSrc = hero.imageSrc || "/images/wedding-hero.png";
   const heroImages = hero.images?.length ? hero.images : [heroImageSrc];
   const navItems = content.navigation.items
@@ -442,10 +446,11 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
   const faqItems = content.faq.items.toSorted((first, second) => first.sortOrder - second.sortOrder);
   const galleryAlbums = snapshot.albums.filter((album) => album.images.length > 0);
   const [albumIndex, setAlbumIndex] = useState(0);
-  const [heroIndex, setHeroIndex] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLanguagePromptVisible, setIsLanguagePromptVisible] = useState(false);
   const albumCarouselRef = useRef<HTMLDivElement>(null);
   const heroCarouselRef = useRef<HTMLDivElement>(null);
+  const heroCarouselIndexRef = useRef(0);
   const isThai = language === "th";
   const languageStyle = isThai
     ? ({
@@ -453,6 +458,12 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
         fontFamily: "var(--font-kanit), ui-sans-serif, system-ui, sans-serif",
       } as CSSProperties)
     : undefined;
+
+  const chooseLanguage = (nextLanguage: Language) => {
+    setLanguage(nextLanguage);
+    window.localStorage.setItem(languagePreferenceKey, nextLanguage);
+    setIsLanguagePromptVisible(false);
+  };
 
   const moveAlbum = (direction: -1 | 1) => {
     if (galleryAlbums.length < 2) return;
@@ -470,14 +481,22 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
   }, [albumIndex, galleryAlbums.length]);
 
   useEffect(() => {
+    const savedLanguage = window.localStorage.getItem(languagePreferenceKey);
+    if (savedLanguage === "en" || savedLanguage === "th") {
+      setLanguage(savedLanguage);
+      return;
+    }
+
+    setIsLanguagePromptVisible(window.navigator.language.toLowerCase().startsWith("th"));
+  }, []);
+
+  useEffect(() => {
     if (heroImages.length < 2 || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => {
-      setHeroIndex((currentIndex) => {
-        const nextIndex = (currentIndex + 1) % heroImages.length;
-        const nextCard = heroCarouselRef.current?.children[nextIndex] as HTMLElement | undefined;
-        heroCarouselRef.current?.scrollTo({ behavior: "smooth", left: nextCard?.offsetLeft ?? 0 });
-        return nextIndex;
-      });
+      const nextIndex = (heroCarouselIndexRef.current + 1) % heroImages.length;
+      const nextCard = heroCarouselRef.current?.children[nextIndex] as HTMLElement | undefined;
+      heroCarouselRef.current?.scrollTo({ behavior: "smooth", left: nextCard?.offsetLeft ?? 0 });
+      heroCarouselIndexRef.current = nextIndex;
     }, 6000);
     return () => window.clearInterval(timer);
   }, [heroImages.length]);
@@ -490,7 +509,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-[#0A1F44]/90 text-[#FBF8F0] backdrop-blur">
         <nav
           aria-label="Primary navigation"
-          className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
+          className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8"
         >
           <a className="script-display text-2xl font-semibold leading-none" href="#home">
             J&S
@@ -502,18 +521,19 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
               </a>
             ))}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               aria-label={isThai ? "Switch language to English" : "Switch language to Thai"}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-[#D6C8A5]/70 px-3 text-xs font-semibold uppercase tracking-[0.1em] text-[#FBF8F0] transition hover:bg-[#D6C8A5] hover:text-[#0A1F44]"
-              onClick={() => setLanguage(isThai ? "en" : "th")}
+              className="inline-flex h-11 min-w-[4.75rem] items-center justify-center gap-2 rounded-full border border-[#D6C8A5]/70 px-3 text-xs font-semibold uppercase tracking-[0.1em] text-[#FBF8F0] transition-opacity active:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FBF8F0]"
+              onClick={() => chooseLanguage(isThai ? "en" : "th")}
               type="button"
             >
-              <Globe2 aria-hidden="true" size={15} />
+              <Globe2 aria-hidden="true" size={19} />
               <span>{t.languageButton}</span>
             </button>
             <a
-              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#D6C8A5] px-3 text-sm font-semibold text-[#0A1F44] transition hover:bg-[#FBF8F0] sm:px-4"
+              className="hidden min-h-11 items-center gap-2 rounded-full bg-[#D6C8A5] px-3 text-sm font-semibold text-[#0A1F44] transition hover:bg-[#FBF8F0] md:inline-flex md:px-4"
+              data-testid="header-rsvp"
               href="#rsvp"
             >
               <Users aria-hidden="true" size={16} />
@@ -524,17 +544,35 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
             </button>
           </div>
         </nav>
-        {isMobileMenuOpen ? <div className="absolute inset-x-0 top-full z-[60] flex min-h-[calc(100svh-4rem)] flex-col overflow-y-auto border-t border-[#D6C8A5] bg-[#FBF8F0] px-4 py-6 text-[#0A1F44] shadow-[0_18px_40px_rgba(10,31,68,0.18)] md:hidden"><p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#7C5C3B]">Explore</p><div className="grid">{navItems.map((item) => <a className="flex min-h-14 items-center border-b border-[#0A1F44]/12 text-base font-semibold transition hover:bg-[#D6C8A5]/30" href={item.href} key={item.href} onClick={() => setIsMobileMenuOpen(false)}>{isThai && item.id === "faq" ? "คำถามที่พบบ่อย" : localized(item.label, item.id)}<span aria-hidden className="ml-auto pr-1 text-[#7C5C3B]">→</span></a>)}</div><p className="mt-auto pt-8 text-center text-xs font-semibold uppercase tracking-[0.18em] text-[#7C5C3B]">{hero.coupleName} · {localized(hero.date, t.heroDate)}</p></div> : null}
+        {isMobileMenuOpen ? <div className="absolute inset-x-0 top-full z-[60] flex min-h-[calc(100svh-4rem)] flex-col overflow-y-auto border-t border-[#D6C8A5] bg-[#FBF8F0] px-4 py-6 text-[#0A1F44] shadow-[0_18px_40px_rgba(10,31,68,0.18)] md:hidden"><p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#7C5C3B]">Explore</p><div className="grid">{navItems.map((item) => <a className="flex min-h-14 items-center border-b border-[#0A1F44]/12 text-base font-semibold transition hover:bg-[#D6C8A5]/30" href={item.href} key={item.href} onClick={() => setIsMobileMenuOpen(false)}>{isThai && item.id === "faq" ? "คำถามที่พบบ่อย" : localized(item.label, item.id)}<span aria-hidden className="ml-auto pr-1 text-[#7C5C3B]">→</span></a>)}</div><p className="mt-auto pt-8 text-center text-xs font-semibold uppercase tracking-[0.18em] text-[#7C5C3B]">{coupleName} · {localized(hero.date, t.heroDate)}</p></div> : null}
       </header>
 
+      {isLanguagePromptVisible ? (
+        <section
+          aria-label="Language preference"
+          className="fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-[70] mx-auto max-w-sm rounded-2xl border border-[#D6C8A5]/60 bg-[#FBF8F0] p-4 text-[#0A1F44] shadow-[0_18px_45px_rgba(10,31,68,0.24)]"
+          style={{ fontFamily: "var(--font-kanit), ui-sans-serif, system-ui, sans-serif" }}
+        >
+          <p className="text-base font-semibold">ต้องการดูภาษาไทยไหม?</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button className="min-h-11 rounded-full bg-[#0A1F44] px-3 text-sm font-semibold text-[#FBF8F0]" onClick={() => chooseLanguage("th")} type="button">
+              ดูภาษาไทย
+            </button>
+            <button className="min-h-11 rounded-full border border-[#0A1F44]/20 px-3 text-sm font-semibold text-[#0A1F44]" onClick={() => chooseLanguage("en")} type="button">
+              Stay in English
+            </button>
+          </div>
+        </section>
+      ) : null}
+
       <section className="grid bg-[#0A1F44] text-[#FBF8F0] md:min-h-[calc(100svh-4.5rem)] md:grid-cols-[0.82fr_1.18fr]" id="home">
-        <div className="order-2 flex items-center px-5 py-16 sm:px-10 md:order-1 md:px-12 lg:px-20">
+        <div className="order-2 flex items-center bg-[#0A1F44] px-5 py-16 sm:px-10 md:order-1 md:px-12 lg:px-20" data-testid="hero-copy">
           <div className="max-w-xl">
             <p className="mb-7 text-xs font-semibold uppercase tracking-[0.34em] text-[#D6C8A5]">
               {localized(hero.date, t.heroDate)}
             </p>
             <h1 className="script-display text-6xl font-medium leading-[0.92] tracking-normal sm:text-7xl lg:text-8xl">
-              {hero.coupleName || "Jajah & Smart"}
+              {heroDisplayName}
             </h1>
             <div className="my-8 h-px w-24 bg-[#D6C8A5]" />
             <p className="max-w-lg text-lg leading-8 text-[#FBF8F0]/78 md:text-xl">
@@ -559,11 +597,10 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
           </div>
 
         </div>
-        <div className="relative order-1 aspect-[4/5] min-h-[21rem] touch-pan-x overflow-x-auto overflow-y-hidden overscroll-x-contain bg-[#0A1F44] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:order-2 md:aspect-auto md:min-h-0">
-          <div className="flex h-full snap-x snap-mandatory gap-4 px-4 sm:px-6" data-testid="hero-carousel" onScroll={(event) => setHeroIndex(Math.round(event.currentTarget.scrollLeft / Math.max(event.currentTarget.children[0]?.clientWidth + 16, 1)))} ref={heroCarouselRef}>
-            {heroImages.map((image, index) => <div className="relative min-w-[86%] snap-start bg-[#0A1F44] sm:min-w-[78%]" key={`${image}-${index}`}><Image alt="" aria-hidden className="scale-110 object-cover opacity-35 blur-2xl" fill sizes="(min-width: 768px) 60vw, 100vw" src={image} /><Image alt={localized(hero.imageAlt, "Elegant wedding venue with refined old money styling")} className="object-contain" fill priority={index === 0} sizes="(min-width: 768px) 60vw, 100vw" src={image} /><div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A1F44]/40 via-transparent to-[#0A1F44]/10" /></div>)}
+        <div className="relative order-1 aspect-[4/5] min-h-[21rem] touch-pan-x overflow-x-auto overflow-y-hidden overscroll-x-contain bg-[#0A1F44] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:order-2 md:aspect-auto md:min-h-0" data-testid="hero-stage">
+          <div className="flex h-full snap-x snap-mandatory gap-4 px-4 sm:px-6" data-testid="hero-carousel" ref={heroCarouselRef}>
+            {heroImages.map((image, index) => <div className="relative min-w-[86%] snap-start bg-[#0A1F44] sm:min-w-[78%]" key={`${image}-${index}`}><Image alt={localized(hero.imageAlt, "Elegant wedding venue with refined old money styling")} className="object-contain" fill priority={index === 0} sizes="(min-width: 768px) 60vw, 100vw" src={image} /></div>)}
           </div>
-          {heroImages.length > 1 ? <div className="pointer-events-none absolute inset-x-0 bottom-5 flex justify-center gap-2">{heroImages.map((image, index) => <span aria-hidden className={`h-2 rounded-full transition-all ${index === heroIndex ? "w-8 bg-[#0A1F44]" : "w-2 bg-[#0A1F44]/25"}`} key={`${image}-indicator-${index}`} />)}</div> : null}
         </div>
       </section>
 
@@ -875,7 +912,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
       </section>
 
       <footer className="bg-[#0A1F44] px-4 py-10 text-center text-[#FBF8F0] sm:px-6 lg:px-8">
-        <p className="script-display text-4xl font-medium">{content.footer.coupleName}</p>
+        <p className="script-display text-4xl font-medium">{normalizeBrandName(content.footer.coupleName)}</p>
         <p className="mt-2 text-sm uppercase tracking-[0.22em] text-[#D6C8A5]">
           {localized(content.footer.details, "1 November 2026 · Pearl Wedding Avenue")}
         </p>

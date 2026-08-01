@@ -28,13 +28,13 @@ const kanit = Kanit({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://jah-smart-wedding.example.com"),
-  title: "Jajah & Smart Wedding",
+  title: "JaJah & Smart Wedding",
   description:
-    "Join Jajah & Smart for their wedding celebration on Sunday, 1 November 2026 at Pearl Wedding Venue.",
+    "Join JaJah & Smart for their wedding celebration on Sunday, 1 November 2026 at Pearl Wedding Venue.",
   openGraph: {
-    title: "Jajah & Smart Wedding",
+    title: "JaJah & Smart Wedding",
     description:
-      "Wedding details, schedule, location, dress code, RSVP, and contact information for Jajah & Smart.",
+      "Wedding details, schedule, location, dress code, RSVP, and contact information for JaJah & Smart.",
     type: "website",
     images: ["/images/wedding-hero.png"],
   },

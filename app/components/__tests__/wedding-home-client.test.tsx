@@ -7,6 +7,7 @@ import { WeddingHomeClient } from "../WeddingHomeClient";
 
 describe("WeddingHomeClient", () => {
   afterEach(() => {
+    window.localStorage.clear();
     vi.restoreAllMocks();
     vi.useRealTimers();
   });
@@ -94,6 +95,27 @@ describe("WeddingHomeClient", () => {
     expect(screen.getByText("15.09 น.")).toBeInTheDocument();
   });
 
+  it("uses a globe icon with a clear accessible label", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    const languageButton = screen.getByRole("button", { name: "Switch language to Thai" });
+    expect(languageButton.querySelector(".lucide-earth")).toBeInTheDocument();
+    expect(languageButton).toHaveTextContent("TH");
+    expect(screen.getByTestId("header-rsvp")).toHaveClass("hidden");
+  });
+
+  it("offers Thai as a non-blocking first-visit preference for Thai-language devices", () => {
+    vi.spyOn(window.navigator, "language", "get").mockReturnValue("th-TH");
+
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    expect(screen.getByRole("region", { name: "Language preference" })).toHaveTextContent("ต้องการดูภาษาไทยไหม?");
+    fireEvent.click(screen.getByRole("button", { name: "Stay in English" }));
+
+    expect(screen.queryByRole("region", { name: "Language preference" })).not.toBeInTheDocument();
+    expect(window.localStorage.getItem("wedding-language")).toBe("en");
+  });
+
   it("keeps schedule dividers out of the time column", () => {
     render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
 
@@ -132,6 +154,34 @@ describe("WeddingHomeClient", () => {
     vi.advanceTimersByTime(6000);
 
     expect(scrollTo).toHaveBeenCalledWith({ behavior: "smooth", left: expect.any(Number) });
+  });
+
+  it("keeps the hero photo on a continuous navy surface without darkening it", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    const heroStage = screen.getByTestId("hero-stage");
+    expect(heroStage).toHaveClass("bg-[#0A1F44]");
+    expect(heroStage.firstElementChild?.firstElementChild).toHaveClass("bg-[#0A1F44]");
+    expect(heroStage.querySelector(".bg-gradient-to-t")).not.toBeInTheDocument();
+  });
+
+  it("keeps the hero copy framed in navy and does not show inactive photo controls", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    expect(screen.getByTestId("hero-copy")).toHaveClass("bg-[#0A1F44]");
+    expect(screen.getByTestId("hero-carousel").querySelectorAll("span")).toHaveLength(0);
+  });
+
+  it("uses Jajah for the hero script while normalizing CMS copy elsewhere", () => {
+    const snapshot = structuredClone(fallbackCmsSnapshot) as CmsSnapshot;
+    snapshot.content.hero.coupleName = "Jajah & Smart";
+    snapshot.content.footer.coupleName = "Jajah & Smart";
+
+    render(<WeddingHomeClient snapshot={snapshot} />);
+
+    const heroName = screen.getByRole("heading", { name: "Jajah & Smart" });
+    expect(heroName).toHaveClass("text-6xl");
+    expect(screen.getByText("JaJah & Smart", { selector: "p" })).toBeInTheDocument();
   });
 
   it("uses the script display font for the J&S brand mark", () => {

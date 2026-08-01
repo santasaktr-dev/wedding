@@ -70,7 +70,7 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
                 {isThai ? "แกลเลอรี" : "Gallery"}
               </p>
               <h1 className="luxury-heading max-w-3xl text-4xl font-semibold leading-tight md:text-6xl">
-                {isThai ? "อัลบั้มของ Jajah & Smart" : "Jajah & Smart Albums"}
+                {isThai ? "อัลบั้มของ JaJah & Smart" : "JaJah & Smart Albums"}
               </h1>
             </div>
             <p className="max-w-xl text-base leading-8 text-[#0A1F44]/70 md:justify-self-end md:text-lg">
