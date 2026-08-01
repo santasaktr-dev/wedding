@@ -89,7 +89,7 @@ describe("WeddingHomeClient", () => {
     snapshot.content.schedule.items[1].time = "15.09";
 
     render(<WeddingHomeClient snapshot={snapshot} />);
-    fireEvent.click(screen.getByRole("button", { name: "TH" }));
+    fireEvent.click(screen.getByRole("button", { name: "Switch language to Thai" }));
 
     expect(screen.getByText("15.09 น.")).toBeInTheDocument();
   });

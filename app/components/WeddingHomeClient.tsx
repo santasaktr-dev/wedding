@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Check,
   Clock,
+  Globe2,
   MapPin,
   MessageCircle,
   Menu,
@@ -503,14 +504,16 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
           </div>
           <div className="flex items-center gap-2">
             <button
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#D6C8A5]/55 text-xs font-semibold uppercase tracking-[0.14em] text-[#FBF8F0] transition hover:bg-[#D6C8A5] hover:text-[#0A1F44]"
+              aria-label={isThai ? "Switch language to English" : "Switch language to Thai"}
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-[#D6C8A5]/70 px-3 text-xs font-semibold uppercase tracking-[0.1em] text-[#FBF8F0] transition hover:bg-[#D6C8A5] hover:text-[#0A1F44]"
               onClick={() => setLanguage(isThai ? "en" : "th")}
               type="button"
             >
-              {t.languageButton}
+              <Globe2 aria-hidden="true" size={15} />
+              <span>{t.languageButton}</span>
             </button>
             <a
-              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#D6C8A5] px-4 text-sm font-semibold text-[#0A1F44] transition hover:bg-[#FBF8F0]"
+              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#D6C8A5] px-3 text-sm font-semibold text-[#0A1F44] transition hover:bg-[#FBF8F0] sm:px-4"
               href="#rsvp"
             >
               <Users aria-hidden="true" size={16} />
