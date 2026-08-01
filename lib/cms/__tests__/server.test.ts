@@ -40,6 +40,19 @@ describe("loadCmsSnapshotFromRows", () => {
     });
   });
 
+  it("provides the confirmed five-part bilingual wedding timeline by default", () => {
+    const items = fallbackCmsSnapshot.content.schedule.items;
+
+    expect(items.map((item) => item.time)).toEqual(["15.00 น.", "15.09", "18.00 น.", "19.00 น.", "22.00 น."]);
+    expect(items.at(-1)).toMatchObject({
+      title: { en: "End of Celebration", th: "จบงาน" },
+      detail: {
+        en: "Event concludes — thank you for celebrating with us.",
+        th: "งานเลี้ยงฉลองสิ้นสุดลง ขอบคุณที่มาร่วมเป็นส่วนหนึ่งของวันสำคัญนี้",
+      },
+    });
+  });
+
   it("returns fallback when rows are missing", () => {
     expect(loadCmsSnapshotFromRows({ sections: [], albums: [], images: [] })).toEqual(fallbackCmsSnapshot);
   });
@@ -96,6 +109,30 @@ describe("loadCmsSnapshotFromRows", () => {
       fallbackCmsSnapshot.content.rsvp.relationshipOptions.length,
     );
     expect(snapshot.content.rsvp.title.en).toBe("Old Draft RSVP");
+  });
+
+  it("adds the confirmed closing event when an older schedule has only four rows", () => {
+    const snapshot = loadCmsSnapshotFromRows({
+      sections: [
+        {
+          section_key: "schedule",
+          language: "en",
+          content: {
+            items: fallbackCmsSnapshot.content.schedule.items.slice(0, 4),
+          },
+        },
+      ],
+      albums: [],
+      images: [],
+    });
+
+    expect(snapshot.content.schedule.items.map((item) => item.id)).toEqual([
+      "registration",
+      "ceremony",
+      "reception",
+      "toast",
+      "end",
+    ]);
   });
 
   it("maps and sorts gallery rows", () => {

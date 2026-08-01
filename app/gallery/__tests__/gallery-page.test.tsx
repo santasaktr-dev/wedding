@@ -38,20 +38,53 @@ vi.mock("../../../lib/cms/server", () => ({
         },
       ],
     },
+    {
+      id: "album-2",
+      slug: "family",
+      status: "published",
+      sortOrder: 1,
+      label: { en: "Gallery", th: "แกลเลอรี" },
+      title: { en: "Family", th: "ครอบครัว" },
+      description: { en: "Family photos", th: "รูปครอบครัว" },
+      images: [
+        {
+          id: "image-3",
+          albumId: "album-2",
+          storagePath: "family/family.jpg",
+          publicUrl: "/images/wedding-hero.png",
+          caption: { en: "Family", th: "ครอบครัว" },
+          alt: { en: "Family photo", th: "ภาพครอบครัว" },
+          sortOrder: 0,
+          isCover: false,
+          status: "published",
+        },
+      ],
+    },
   ]),
 }));
 
 describe("GalleryPage", () => {
-  it("renders public gallery photos in a natural-ratio masonry layout", async () => {
-    render(await GalleryPage());
+  it("shows touch-friendly album cards before loading gallery photos", async () => {
+    render(await GalleryPage({ searchParams: Promise.resolve({}) }));
+
+    expect(screen.getByRole("link", { name: /highlights/i })).toHaveAttribute("href", "/gallery?album=highlights");
+    expect(screen.getByRole("link", { name: /family/i })).toHaveAttribute("href", "/gallery?album=family");
+    expect(screen.queryByTestId("gallery-masonry-highlights")).not.toBeInTheDocument();
+  });
+
+  it("renders one selected album with a back link", async () => {
+    render(await GalleryPage({ searchParams: Promise.resolve({ album: "highlights" }) }));
 
     expect(screen.getByTestId("gallery-masonry-highlights")).toHaveClass("columns-1");
     expect(screen.getByRole("img", { name: "Portrait photo" })).toHaveClass("h-auto", "w-full");
-    expect(screen.getByRole("img", { name: "Portrait photo" })).not.toHaveClass("object-cover");
+    const backLink = screen.getByRole("link", { name: /back to home/i });
+    expect(backLink).toHaveAttribute("href", "/#gallery");
+    expect(backLink.compareDocumentPosition(screen.getByRole("heading", { name: "Jajah & Smart Albums" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(backLink.compareDocumentPosition(screen.getByRole("heading", { name: "Highlights" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("uses the brand link and breadcrumb as quiet gallery navigation", async () => {
-    render(await GalleryPage());
+    render(await GalleryPage({ searchParams: Promise.resolve({}) }));
 
     const brandLink = screen.getByRole("link", { name: "Back to website" });
 

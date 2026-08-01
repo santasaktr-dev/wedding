@@ -9,5 +9,6 @@ export default defineConfig({
     passWithNoTests: true,
     setupFiles: ["./test/setup.ts"],
     include: ["**/__tests__/**/*.test.ts", "**/__tests__/**/*.test.tsx"],
+    exclude: ["**/node_modules/**", "**/.node_modules-icloud-offloaded-20260801/**"],
   },
 });

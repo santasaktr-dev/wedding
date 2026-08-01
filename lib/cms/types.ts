@@ -86,6 +86,7 @@ export type WeddingContent = {
     date: LocalizedText;
     text: LocalizedText;
     imageSrc: string;
+    images?: string[];
     imageAlt: LocalizedText;
     locationButton: LocalizedText;
     dressButton: LocalizedText;

@@ -17,6 +17,7 @@ function getSupabaseHostname() {
 const supabaseHostname = getSupabaseHostname() ?? "ssnnduppslxslsuwnqhx.supabase.co";
 
 const nextConfig: NextConfig = {
+  compress: false,
   experimental: {
     serverActions: {
       bodySizeLimit: "100mb",
