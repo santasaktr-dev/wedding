@@ -79,6 +79,7 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
         th: "เรียนเชิญร่วมเป็นเกียรติในงานฉลองมงคลสมรสของ Jajah & Smart ณ Pearl Wedding Venue",
       },
       imageSrc: weddingHeroImage,
+      images: [weddingHeroImage],
       imageAlt: {
         en: "Elegant wedding venue with refined old money styling",
         th: "บรรยากาศงานแต่งงานสไตล์ Old Money ที่เรียบหรู",
@@ -117,7 +118,7 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
         {
           id: "time",
           label: { en: "Time", th: "เวลา" },
-          value: { en: "To be confirmed", th: "รอยืนยันเวลา" },
+          value: { en: "From 3.00 PM", th: "เริ่มเวลา 15.00 น." },
         },
         {
           id: "venue",
@@ -141,37 +142,59 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
         th: "ลำดับพิธี",
       },
       intro: {
-        en: "The final timeline is being confirmed. Please check back closer to the wedding date for the exact arrival and ceremony times.",
-        th: "กำหนดการและเวลางานโดยละเอียดอยู่ระหว่างการยืนยัน และจะอัปเดตอีกครั้งเมื่อใกล้วันงาน",
+        en: "A celebration shared from the first welcome through the final toast.",
+        th: "กำหนดการตลอดวัน ตั้งแต่ต้อนรับแขกจนถึงช่วงเฉลิมฉลอง",
       },
       items: [
         {
           id: "registration",
-          time: "TBC",
-          title: { en: "Guest Registration", th: "ลงทะเบียน" },
-          detail: { en: "Welcome and arrival", th: "ต้อนรับแขกและลงทะเบียน" },
+          time: "15.00 น.",
+          title: { en: "Guest Registration", th: "ลงทะเบียนรับแขก" },
+          detail: {
+            en: "Guests arrive and enjoy refreshments before the ceremony begins.",
+            th: "แขกรับประทานอาหารว่างที่ห้องรับรอง ก่อนเริ่มพิธี",
+          },
           sortOrder: 0,
         },
         {
           id: "ceremony",
-          time: "TBC",
-          title: { en: "Wedding Ceremony", th: "พิธีแต่งงาน" },
-          detail: { en: "Ceremony begins", th: "เริ่มพิธีมงคลสมรส" },
+          time: "15.09",
+          title: { en: "Wedding Ceremony", th: "พิธีมงคลสมรส" },
+          detail: {
+            en: "Ring exchange, blessing ceremony (Yok Nam Cha), and the Song Tua rite.",
+            th: "พิธีสวมแหวน พิธีรับไหว้/ยกน้ำชา และพิธีส่งตัว",
+          },
           sortOrder: 1,
         },
         {
           id: "reception",
-          time: "TBC",
+          time: "18.00 น.",
           title: { en: "Dinner Reception", th: "งานเลี้ยงฉลอง" },
-          detail: { en: "Dinner and reception", th: "รับประทานอาหารและร่วมฉลอง" },
+          detail: {
+            en: "Guests enter the reception hall for drinks and dinner.",
+            th: "แขกเข้าสู่ห้องจัดเลี้ยง เริ่มบริการเครื่องดื่มและอาหารค่ำ",
+          },
           sortOrder: 2,
         },
         {
           id: "toast",
-          time: "TBC",
-          title: { en: "Toast & Celebration", th: "กล่าวอวยพร" },
-          detail: { en: "Toasts and celebration", th: "ช่วงอวยพรและเฉลิมฉลอง" },
+          time: "19.00 น.",
+          title: { en: "Toast & Celebration", th: "พิธีการบนเวที" },
+          detail: {
+            en: "Speeches, candle & cake ceremony, and the bouquet toss.",
+            th: "พิธีกรขึ้นเวที กล่าวอวยพร พิธีจุดเทียนมงคล ตัดเค้ก และโยนดอกไม้",
+          },
           sortOrder: 3,
+        },
+        {
+          id: "end",
+          time: "22.00 น.",
+          title: { en: "End of Celebration", th: "จบงาน" },
+          detail: {
+            en: "Event concludes — thank you for celebrating with us.",
+            th: "งานเลี้ยงฉลองสิ้นสุดลง ขอบคุณที่มาร่วมเป็นส่วนหนึ่งของวันสำคัญนี้",
+          },
+          sortOrder: 4,
         },
       ],
     },
@@ -461,7 +484,7 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
       coupleName: "Jajah & Smart",
       details: {
         en: "1 November 2026 · Pearl Wedding Venue",
-        th: "1 November 2026 · Pearl Wedding Venue",
+        th: "1 พฤศจิกายน 2569 · Pearl Wedding Venue",
       },
     },
   },

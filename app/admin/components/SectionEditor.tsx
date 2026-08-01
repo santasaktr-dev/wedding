@@ -411,6 +411,7 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
         hero: {
           ...content.hero,
           imageSrc: uploadResult.publicUrl,
+          images: [...(content.hero.images ?? [content.hero.imageSrc]), uploadResult.publicUrl],
         },
       };
 
@@ -433,6 +434,11 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
       setIsUploadingHero(false);
     }
   };
+
+  const updateHeroImages = (images: string[]) => setContent((current) => ({
+    ...current,
+    hero: { ...current.hero, imageSrc: images[0] ?? current.hero.imageSrc, images },
+  }));
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
@@ -570,6 +576,18 @@ export function SectionEditor({ initialContent }: { initialContent: WeddingConte
                 onChange={(value) => updatePlain("hero", "imageSrc", value)}
                 value={content.hero.imageSrc}
               />
+              <div className="grid gap-3">
+                <p className="text-sm font-semibold text-[#0a1f44]">Home photo cards</p>
+                {(content.hero.images ?? [content.hero.imageSrc]).map((src, index, images) => (
+                  <div className="flex items-center gap-3 border border-[#d6c8a5] bg-white p-3" key={`${src}-${index}`}>
+                    <img alt="" className="h-16 w-16 object-contain" src={src} />
+                    <p className="min-w-0 flex-1 truncate text-xs text-[#3e4d3a]">Photo {index + 1}</p>
+                    <button className="border border-[#0a1f44] px-2 py-1 text-xs disabled:opacity-40" disabled={index === 0} onClick={() => updateHeroImages([...images.slice(0, index - 1), images[index], images[index - 1], ...images.slice(index + 1)])} type="button">↑</button>
+                    <button className="border border-[#0a1f44] px-2 py-1 text-xs disabled:opacity-40" disabled={index === images.length - 1} onClick={() => updateHeroImages([...images.slice(0, index), images[index + 1], images[index], ...images.slice(index + 2)])} type="button">↓</button>
+                    <button className="border border-[#8d2f2f] px-2 py-1 text-xs text-[#8d2f2f]" disabled={images.length === 1} onClick={() => updateHeroImages(images.filter((_, imageIndex) => imageIndex !== index))} type="button">Delete</button>
+                  </div>
+                ))}
+              </div>
               <TextField
                 id="hero-image-alt"
                 label="Hero image alt text"

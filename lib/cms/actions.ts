@@ -7,7 +7,7 @@ import { createSupabaseServerClient } from "../supabase/server";
 import { fallbackCmsSnapshot } from "./fallback";
 import { loadCmsSnapshotFromRows } from "./server";
 import { buildGalleryStoragePath, buildHeroStoragePath } from "./storage";
-import type { WeddingContent } from "./types";
+import type { GalleryAlbum, WeddingContent } from "./types";
 
 type SupabaseClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 type ContentSectionUpsertRow = {
@@ -25,6 +25,21 @@ type UploadGalleryImagesResult = CmsActionResult & {
 };
 type UploadHeroImageResult = CmsActionResult & {
   publicUrl?: string;
+};
+type CreateGalleryAlbumInput = {
+  slug: string;
+  labelEn: string;
+  labelTh: string;
+  titleEn: string;
+  titleTh: string;
+  descriptionEn: string;
+  descriptionTh: string;
+};
+type CreateGalleryAlbumResult = CmsActionResult & {
+  album?: GalleryAlbum;
+};
+type DeleteGalleryAlbumImagesResult = CmsActionResult & {
+  deletedCount?: number;
 };
 
 let fallbackDraftContent: WeddingContent = structuredClone(fallbackCmsSnapshot.content) as WeddingContent;
@@ -212,6 +227,58 @@ export async function uploadGalleryImages(formData: FormData): Promise<UploadGal
   return { ok: true, uploadedCount: uploadedRows.length };
 }
 
+export async function createGalleryAlbum(input: CreateGalleryAlbumInput): Promise<CreateGalleryAlbumResult> {
+  const slug = input.slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+  if (!slug || !input.titleEn.trim() || !input.titleTh.trim()) {
+    return { ok: false, message: "Add an album slug and titles in English and Thai." };
+  }
+
+  if (!getSupabaseConfig().isConfigured) {
+    return { ok: false, message: "Supabase is not configured." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const result = await supabase
+    .from("gallery_albums")
+    .insert({
+      slug,
+      status: "draft",
+      sort_order: 0,
+      label_en: input.labelEn.trim(),
+      label_th: input.labelTh.trim(),
+      title_en: input.titleEn.trim(),
+      title_th: input.titleTh.trim(),
+      description_en: input.descriptionEn.trim(),
+      description_th: input.descriptionTh.trim(),
+    })
+    .select("*")
+    .single();
+
+  if (result.error || !result.data) {
+    return { ok: false, message: result.error?.message ?? "Unable to create album." };
+  }
+
+  const row = result.data as {
+    id: string; slug: string; status: "draft"; sort_order: number; cover_image_id: string | null;
+    label_en: string; label_th: string; title_en: string; title_th: string; description_en: string; description_th: string;
+  };
+  const album: GalleryAlbum = {
+    id: row.id,
+    slug: row.slug,
+    status: row.status,
+    sortOrder: row.sort_order,
+    ...(row.cover_image_id ? { coverImageId: row.cover_image_id } : {}),
+    label: { en: row.label_en, th: row.label_th },
+    title: { en: row.title_en, th: row.title_th },
+    description: { en: row.description_en, th: row.description_th },
+    images: [],
+  };
+
+  revalidatePath("/admin/gallery");
+  return { ok: true, album };
+}
+
 export async function uploadHeroImage(formData: FormData): Promise<UploadHeroImageResult> {
   if (!getSupabaseConfig().isConfigured) {
     return { ok: false, message: "Supabase is not configured." };
@@ -297,6 +364,41 @@ export async function saveGalleryImageOrder(albumId: string, orderedImageIds: st
   return { ok: true };
 }
 
+export async function saveGalleryAlbumOrder(orderedAlbumIds: string[]): Promise<CmsActionResult> {
+  if (!getSupabaseConfig().isConfigured) {
+    return { ok: true };
+  }
+
+  if (orderedAlbumIds.length === 0) {
+    return { ok: false, message: "Add at least one album before saving its order." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  for (const [index, id] of orderedAlbumIds.entries()) {
+    const updateResult = await supabase.from("gallery_albums").update({ sort_order: index }).eq("id", id);
+    if (updateResult.error) {
+      return { ok: false, message: updateResult.error.message };
+    }
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
+  revalidatePath("/gallery");
+  return { ok: true };
+}
+
+export async function updateGalleryAlbumTitles(albumId: string, titleEn: string, titleTh: string): Promise<CmsActionResult> {
+  if (!albumId || !titleEn.trim() || !titleTh.trim()) return { ok: false, message: "Add English and Thai album names." };
+  if (!getSupabaseConfig().isConfigured) return { ok: true };
+  const supabase = await createSupabaseServerClient();
+  const result = await supabase.from("gallery_albums").update({ title_en: titleEn.trim(), title_th: titleTh.trim() }).eq("id", albumId);
+  if (result.error) return { ok: false, message: result.error.message };
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
+  revalidatePath("/gallery");
+  return { ok: true };
+}
+
 export async function deleteGalleryImage(imageId: string): Promise<CmsActionResult> {
   if (!getSupabaseConfig().isConfigured) {
     return { ok: true };
@@ -336,6 +438,65 @@ export async function deleteGalleryImage(imageId: string): Promise<CmsActionResu
   revalidatePath("/admin/gallery");
   revalidatePath("/gallery");
 
+  return { ok: true };
+}
+
+export async function deleteGalleryAlbumImages(albumId: string): Promise<DeleteGalleryAlbumImagesResult> {
+  if (!albumId) {
+    return { ok: false, message: "Select an album." };
+  }
+
+  if (!getSupabaseConfig().isConfigured) {
+    return { ok: true, deletedCount: 0 };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const imagesResult = await supabase.from("gallery_images").select("storage_path").eq("album_id", albumId);
+
+  if (imagesResult.error) {
+    return { ok: false, message: imagesResult.error.message };
+  }
+
+  const paths = (imagesResult.data ?? []).map((image) => image.storage_path).filter(Boolean);
+  if (paths.length > 0) {
+    const storageResult = await supabase.storage.from("wedding-gallery").remove(paths);
+    if (storageResult.error) {
+      return { ok: false, message: storageResult.error.message };
+    }
+  }
+
+  const deleteResult = await supabase.from("gallery_images").delete().eq("album_id", albumId);
+  if (deleteResult.error) {
+    return { ok: false, message: deleteResult.error.message };
+  }
+
+  revalidatePath("/admin/gallery");
+  revalidatePath("/gallery");
+  return { ok: true, deletedCount: paths.length };
+}
+
+export async function deleteGalleryAlbum(albumId: string): Promise<CmsActionResult> {
+  if (!getSupabaseConfig().isConfigured) return { ok: true };
+  if (!albumId) return { ok: false, message: "Select an album to delete." };
+
+  const supabase = await createSupabaseServerClient();
+  const imagesResult = await supabase.from("gallery_images").select("storage_path").eq("album_id", albumId);
+  if (imagesResult.error) return { ok: false, message: imagesResult.error.message };
+
+  const paths = (imagesResult.data ?? []).map((image) => image.storage_path as string).filter(Boolean);
+  if (paths.length > 0) {
+    const storageResult = await supabase.storage.from("wedding-gallery").remove(paths);
+    if (storageResult.error) return { ok: false, message: storageResult.error.message };
+  }
+
+  const deleteImagesResult = await supabase.from("gallery_images").delete().eq("album_id", albumId);
+  if (deleteImagesResult.error) return { ok: false, message: deleteImagesResult.error.message };
+  const deleteAlbumResult = await supabase.from("gallery_albums").delete().eq("id", albumId);
+  if (deleteAlbumResult.error) return { ok: false, message: deleteAlbumResult.error.message };
+
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
+  revalidatePath("/gallery");
   return { ok: true };
 }
 

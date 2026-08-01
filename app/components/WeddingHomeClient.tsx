@@ -2,15 +2,17 @@
 
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CalendarDays,
   Check,
   Clock,
   MapPin,
   MessageCircle,
+  Menu,
   Phone,
   Shirt,
+  X,
   Users,
 } from "lucide-react";
 import type { CmsSnapshot } from "../../lib/cms/types";
@@ -424,6 +426,7 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
   const content = snapshot.content;
   const hero = content.hero;
   const heroImageSrc = hero.imageSrc || "/images/wedding-hero.png";
+  const heroImages = hero.images?.length ? hero.images : [heroImageSrc];
   const navItems = content.navigation.items
     .filter((item) => item.isVisible)
     .toSorted((first, second) => first.sortOrder - second.sortOrder);
@@ -436,13 +439,12 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
     (first, second) => first.sortOrder - second.sortOrder,
   );
   const faqItems = content.faq.items.toSorted((first, second) => first.sortOrder - second.sortOrder);
-  const bottomNavItems = navItems
-    .filter((item) => ["location", "schedule", "dress-code", "rsvp"].includes(item.id))
-    .map((item) => ({
-      ...item,
-      icon: item.id === "location" ? MapPin : item.id === "schedule" ? Clock : item.id === "dress-code" ? Shirt : Users,
-    }));
-  const previewImages = snapshot.albums[0]?.images.slice(0, 3) ?? [];
+  const galleryAlbums = snapshot.albums.filter((album) => album.images.length > 0);
+  const [albumIndex, setAlbumIndex] = useState(0);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const albumCarouselRef = useRef<HTMLDivElement>(null);
+  const heroCarouselRef = useRef<HTMLDivElement>(null);
   const isThai = language === "th";
   const languageStyle = isThai
     ? ({
@@ -450,6 +452,34 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
         fontFamily: "var(--font-kanit), ui-sans-serif, system-ui, sans-serif",
       } as CSSProperties)
     : undefined;
+
+  const moveAlbum = (direction: -1 | 1) => {
+    if (galleryAlbums.length < 2) return;
+    const nextIndex = (albumIndex + direction + galleryAlbums.length) % galleryAlbums.length;
+    setAlbumIndex(nextIndex);
+    const nextAlbum = albumCarouselRef.current?.children[nextIndex] as HTMLElement | undefined;
+    albumCarouselRef.current?.scrollTo({ behavior: "smooth", left: nextAlbum?.offsetLeft ?? 0 });
+  };
+
+
+  useEffect(() => {
+    if (galleryAlbums.length < 2 || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(() => moveAlbum(1), 6000);
+    return () => window.clearInterval(timer);
+  }, [albumIndex, galleryAlbums.length]);
+
+  useEffect(() => {
+    if (heroImages.length < 2 || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(() => {
+      setHeroIndex((currentIndex) => {
+        const nextIndex = (currentIndex + 1) % heroImages.length;
+        const nextCard = heroCarouselRef.current?.children[nextIndex] as HTMLElement | undefined;
+        heroCarouselRef.current?.scrollTo({ behavior: "smooth", left: nextCard?.offsetLeft ?? 0 });
+        return nextIndex;
+      });
+    }, 6000);
+    return () => window.clearInterval(timer);
+  }, [heroImages.length]);
 
   return (
     <main
@@ -473,21 +503,25 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
           </div>
           <div className="flex items-center gap-2">
             <button
-              className="inline-flex min-h-10 items-center rounded-full border border-[#D6C8A5]/55 px-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#FBF8F0] transition hover:bg-[#D6C8A5] hover:text-[#0A1F44]"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#D6C8A5]/55 text-xs font-semibold uppercase tracking-[0.14em] text-[#FBF8F0] transition hover:bg-[#D6C8A5] hover:text-[#0A1F44]"
               onClick={() => setLanguage(isThai ? "en" : "th")}
               type="button"
             >
               {t.languageButton}
             </button>
             <a
-              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#D6C8A5]/80 px-4 text-sm font-semibold text-[#FBF8F0] transition hover:bg-[#D6C8A5] hover:text-[#0A1F44]"
+              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#D6C8A5] px-4 text-sm font-semibold text-[#0A1F44] transition hover:bg-[#FBF8F0]"
               href="#rsvp"
             >
               <Users aria-hidden="true" size={16} />
               {t.rsvpButton}
             </a>
+            <button aria-expanded={isMobileMenuOpen} aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"} className="grid h-10 w-10 place-items-center rounded-full border border-[#D6C8A5]/55 text-[#FBF8F0] md:hidden" onClick={() => setIsMobileMenuOpen((open) => !open)} type="button">
+              {isMobileMenuOpen ? <X aria-hidden="true" size={19} /> : <Menu aria-hidden="true" size={19} />}
+            </button>
           </div>
         </nav>
+        {isMobileMenuOpen ? <div className="absolute inset-x-0 top-full z-[60] flex min-h-[calc(100svh-4rem)] flex-col overflow-y-auto border-t border-[#D6C8A5] bg-[#FBF8F0] px-4 py-6 text-[#0A1F44] shadow-[0_18px_40px_rgba(10,31,68,0.18)] md:hidden"><p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#7C5C3B]">Explore</p><div className="grid">{navItems.map((item) => <a className="flex min-h-14 items-center border-b border-[#0A1F44]/12 text-base font-semibold transition hover:bg-[#D6C8A5]/30" href={item.href} key={item.href} onClick={() => setIsMobileMenuOpen(false)}>{isThai && item.id === "faq" ? "คำถามที่พบบ่อย" : localized(item.label, item.id)}<span aria-hidden className="ml-auto pr-1 text-[#7C5C3B]">→</span></a>)}</div><p className="mt-auto pt-8 text-center text-xs font-semibold uppercase tracking-[0.18em] text-[#7C5C3B]">{hero.coupleName} · {localized(hero.date, t.heroDate)}</p></div> : null}
       </header>
 
       <section className="grid bg-[#0A1F44] text-[#FBF8F0] md:min-h-[calc(100svh-4.5rem)] md:grid-cols-[0.82fr_1.18fr]" id="home">
@@ -522,17 +556,11 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
           </div>
 
         </div>
-        <div className="relative order-1 aspect-[4/5] min-h-[21rem] overflow-hidden md:order-2 md:aspect-auto md:min-h-0">
-          <Image
-            alt={localized(hero.imageAlt, "Elegant wedding venue with refined old money styling")}
-            className="object-cover"
-            fill
-            priority
-            sizes="(min-width: 768px) 60vw, 100vw"
-            src={heroImageSrc}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A1F44]/55 via-transparent to-[#0A1F44]/10" />
-          <div className="absolute inset-5 rounded-bl-[3rem] rounded-tr-[3rem] border border-[#D6C8A5]/55 sm:inset-8 sm:rounded-bl-[5rem] sm:rounded-tr-[5rem]" />
+        <div className="relative order-1 aspect-[4/5] min-h-[21rem] touch-pan-x overflow-x-auto overflow-y-hidden overscroll-x-contain bg-[#0A1F44] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:order-2 md:aspect-auto md:min-h-0">
+          <div className="flex h-full snap-x snap-mandatory gap-4 px-4 sm:px-6" data-testid="hero-carousel" onScroll={(event) => setHeroIndex(Math.round(event.currentTarget.scrollLeft / Math.max(event.currentTarget.children[0]?.clientWidth + 16, 1)))} ref={heroCarouselRef}>
+            {heroImages.map((image, index) => <div className="relative min-w-[86%] snap-start bg-[#0A1F44] sm:min-w-[78%]" key={`${image}-${index}`}><Image alt="" aria-hidden className="scale-110 object-cover opacity-35 blur-2xl" fill sizes="(min-width: 768px) 60vw, 100vw" src={image} /><Image alt={localized(hero.imageAlt, "Elegant wedding venue with refined old money styling")} className="object-contain" fill priority={index === 0} sizes="(min-width: 768px) 60vw, 100vw" src={image} /><div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A1F44]/40 via-transparent to-[#0A1F44]/10" /></div>)}
+          </div>
+          {heroImages.length > 1 ? <div className="pointer-events-none absolute inset-x-0 bottom-5 flex justify-center gap-2">{heroImages.map((image, index) => <span aria-hidden className={`h-2 rounded-full transition-all ${index === heroIndex ? "w-8 bg-[#0A1F44]" : "w-2 bg-[#0A1F44]/25"}`} key={`${image}-indicator-${index}`} />)}</div> : null}
         </div>
       </section>
 
@@ -588,17 +616,23 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
           </div>
           <div className="mx-auto w-full max-w-3xl">
             {scheduleItems.map((item, index) => (
-              <article className="relative grid grid-cols-[3.5rem_1fr] gap-4 border-b border-[#D6C8A5]/18 py-7 first:pt-0 last:border-0 sm:grid-cols-[5rem_1fr] sm:gap-5" key={item.id}>
-                {index !== scheduleItems.length - 1 ? (
-                  <div className="absolute bottom-0 left-[1.65rem] top-10 w-px bg-[#D6C8A5]/35 sm:left-[2.45rem]" />
-                ) : null}
+              <article className="relative grid grid-cols-[3.5rem_minmax(0,1fr)] gap-4 py-7 first:pt-0 sm:grid-cols-[5rem_minmax(0,1fr)] sm:gap-5" key={item.id}>
                 <div className="relative z-10 flex flex-col items-center">
                   <span className="grid h-8 w-8 place-items-center rounded-full bg-[#D6C8A5] text-xs font-bold text-[#0A1F44]">
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                  <time className="mt-3 text-xs font-bold text-[#D6C8A5]">{item.time}</time>
+                  <time className="mt-3 whitespace-nowrap text-xs font-bold text-[#D6C8A5]">
+                    {language === "en"
+                      ? item.time.replace(/\s*น\.$/u, "")
+                      : /^\d/u.test(item.time) && !item.time.endsWith("น.")
+                        ? `${item.time} น.`
+                        : item.time}
+                  </time>
+                  {index !== scheduleItems.length - 1 ? (
+                    <div className="absolute bottom-[-1.75rem] left-1/2 top-[4.25rem] w-px -translate-x-1/2 bg-[#D6C8A5]/35" />
+                  ) : null}
                 </div>
-                <div className="pt-1">
+                <div className={`min-w-0 pt-1 ${index !== scheduleItems.length - 1 ? "border-b border-[#D6C8A5]/18 pb-7" : ""}`}>
                   <h3 className="luxury-heading text-lg font-semibold">{localized(item.title, item.id)}</h3>
                   <p className="mt-2 text-[#FBF8F0]/65">{localized(item.detail, "")}</p>
                 </div>
@@ -622,85 +656,28 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
             </p>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-            <figure className="group overflow-hidden rounded-[1.5rem] border border-[#0A1F44]/10 bg-[#0A1F44] shadow-[0_22px_70px_rgba(10,31,68,0.14)]">
-              <div className="relative aspect-[4/5] sm:aspect-[16/11] lg:h-full lg:min-h-[28rem]">
-                <Image
-                  alt={previewImages[0]?.alt[language] ?? ""}
-                  className="object-cover opacity-95 transition duration-500 group-hover:scale-[1.025]"
-                  fill
-                  sizes="(min-width: 1024px) 58vw, 100vw"
-                  src={previewImages[0]?.publicUrl ?? "/images/wedding-hero.png"}
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0A1F44]/88 to-transparent p-5 pt-20">
-                  <figcaption className="luxury-heading text-sm font-semibold text-[#D6C8A5]">
-                    {previewImages[0]?.caption[language] ?? ""}
-                  </figcaption>
-                </div>
-              </div>
-            </figure>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              {previewImages.slice(1).map((image, index) => (
-                <figure
-                  className={`group overflow-hidden rounded-[1.25rem] border border-[#0A1F44]/10 bg-[#0A1F44] shadow-[0_18px_50px_rgba(10,31,68,0.1)] ${
-                    index === 0 ? "sm:col-span-2" : ""
-                  }`}
-                  key={image.id}
-                >
-                  <div className={index === 0 ? "relative aspect-[16/9]" : "relative aspect-[4/5] lg:aspect-auto lg:h-full"}>
-                    <Image
-                      alt={image.alt[language]}
-                      className="object-cover opacity-95 transition duration-500 group-hover:scale-[1.03]"
-                      fill
-                      sizes="(min-width: 1024px) 42vw, (min-width: 640px) 50vw, 100vw"
-                      src={image.publicUrl}
-                    />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0A1F44]/85 to-transparent p-4 pt-14">
-                      <figcaption className="luxury-heading text-xs font-semibold text-[#D6C8A5]">
-                        {image.caption[language]}
-                      </figcaption>
+          <div className="relative">
+            <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" onScroll={(event) => {
+              const width = event.currentTarget.children[0]?.clientWidth ?? 1;
+              setAlbumIndex(Math.round(event.currentTarget.scrollLeft / (width + 16)));
+            }} ref={albumCarouselRef}>
+              {galleryAlbums.map((album) => {
+                const cover = album.images.find((image) => image.id === album.coverImageId) ?? album.images[0];
+                return <a className="group relative min-w-[86%] snap-start overflow-hidden rounded-[1.5rem] border border-[#0A1F44]/10 bg-[#0A1F44] shadow-[0_22px_70px_rgba(10,31,68,0.14)] sm:min-w-[58%] lg:min-w-[42%]" href={`/gallery?album=${album.slug}`} key={album.id}>
+                  <div className="relative aspect-[4/5] sm:aspect-[16/11]">
+                    <Image alt={cover.alt[language]} className="object-cover opacity-95 transition duration-500 group-hover:scale-[1.025]" fill sizes="(min-width: 1024px) 42vw, (min-width: 640px) 58vw, 86vw" src={cover.publicUrl} />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0A1F44]/90 to-transparent p-5 pt-24 text-[#FBF8F0]">
+                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#D6C8A5]">{localized(content.gallery.albumLabel, t.galleryAlbumLabel)}</p>
+                      <h3 className="luxury-heading mt-2 text-2xl font-semibold">{localized(album.title, album.slug)}</h3>
+                      <p className="mt-2 text-sm text-white/75">{album.images.length} {t.galleryPhotoCount}</p>
                     </div>
                   </div>
-                </figure>
-              ))}
-
-              <a
-                className="group flex min-h-40 flex-col justify-between rounded-[1.25rem] border border-[#0A1F44]/10 bg-[#0A1F44] p-6 text-[#FBF8F0] shadow-[0_18px_50px_rgba(10,31,68,0.12)] transition hover:bg-[#7C5C3B]"
-                href="/gallery"
-              >
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D6C8A5]">
-                  {localized(content.gallery.albumLabel, t.galleryAlbumLabel)}
-                </span>
-                <span className="mt-8 flex items-end justify-between gap-4">
-                  <span className="max-w-[12rem] text-lg font-semibold leading-7">
-                    {localized(content.gallery.cta, t.galleryCta)}
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#D6C8A5]/55 text-xl transition group-hover:translate-x-1"
-                  >
-                    →
-                  </span>
-                </span>
-              </a>
-              <a
-                className="group flex min-h-40 flex-col justify-between rounded-[1.25rem] border border-[#3E4D3A]/20 bg-[#3E4D3A] p-6 text-[#FBF8F0] shadow-[0_18px_50px_rgba(10,31,68,0.12)] transition hover:bg-[#7C5C3B]"
-                href="https://jjhsmartweddingsmemory.vercel.app"
-                rel="noreferrer"
-                target="_blank"
-              >
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D6C8A5]">Memory Book</span>
-                <span className="mt-8 flex items-end justify-between gap-4">
-                  <span className="max-w-[12rem] text-lg font-semibold leading-7">{t.memoryBookCta}</span>
-                  <span
-                    aria-hidden="true"
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#D6C8A5]/55 text-xl transition group-hover:translate-x-1"
-                  >
-                    ↗
-                  </span>
-                </span>
-              </a>
+                </a>;
+              })}
+            </div>
+            {galleryAlbums.length > 1 ? <div className="mt-2 flex items-center justify-between gap-3"><div className="flex gap-1.5">{galleryAlbums.map((album, index) => <span aria-hidden="true" className={`h-1.5 rounded-full transition-all ${index === albumIndex ? "w-6 bg-[#0A1F44]" : "w-1.5 bg-[#0A1F44]/25"}`} key={album.id} />)}</div><div className="hidden gap-2 sm:flex"><button aria-label="Previous album" className="grid h-11 w-11 place-items-center rounded-full border border-[#0A1F44]/20 text-lg" onClick={() => moveAlbum(-1)} type="button">←</button><button aria-label="Next album" className="grid h-11 w-11 place-items-center rounded-full border border-[#0A1F44]/20 text-lg" onClick={() => moveAlbum(1)} type="button">→</button></div></div> : null}
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a className="inline-flex min-h-12 items-center rounded-full border border-[#3E4D3A]/30 bg-[#3E4D3A] px-5 text-sm font-semibold text-[#FBF8F0] transition hover:bg-[#7C5C3B]" href="https://jjhsmartweddingsmemory.vercel.app" rel="noreferrer" target="_blank">{t.memoryBookCta}</a>
             </div>
           </div>
         </ScrollReveal>
@@ -901,24 +878,6 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
         </p>
       </footer>
 
-      <nav
-        aria-label="Quick actions"
-        className="fixed inset-x-3 bottom-3 z-50 grid grid-cols-4 overflow-hidden rounded-2xl border border-[#0A1F44]/10 bg-[#FBF8F0]/95 text-[#0A1F44] shadow-[0_18px_50px_rgba(10,31,68,0.22)] backdrop-blur md:hidden"
-      >
-        {bottomNavItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <a
-              className="flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-bold uppercase tracking-[0.08em]"
-              href={item.href}
-              key={item.href}
-            >
-              <Icon aria-hidden="true" size={17} />
-              {localized(item.label, item.id)}
-            </a>
-          );
-        })}
-      </nav>
     </main>
   );
 }

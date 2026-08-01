@@ -123,6 +123,21 @@ function normalizeContent(content: WeddingContent): WeddingContent {
           ? content.navigation.items
           : fallbackContent.navigation.items,
     },
+    hero: {
+      ...fallbackContent.hero,
+      ...content.hero,
+      images:
+        Array.isArray(content.hero?.images) && content.hero.images.length > 0
+          ? content.hero.images
+          : [content.hero?.imageSrc || fallbackContent.hero.imageSrc],
+    },
+    schedule: {
+      ...fallbackContent.schedule,
+      ...content.schedule,
+      items: fallbackContent.schedule.items.map(
+        (fallbackItem) => content.schedule?.items?.find((item) => item.id === fallbackItem.id) ?? fallbackItem,
+      ),
+    },
     rsvp: {
       ...fallbackContent.rsvp,
       ...content.rsvp,

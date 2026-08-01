@@ -7,6 +7,8 @@ import {
   saveDraftContent,
   saveGalleryImageOrder,
   deleteGalleryImage,
+  deleteGalleryAlbumImages,
+  createGalleryAlbum,
   uploadHeroImage,
   uploadGalleryImages,
   uploadGalleryImagesAction,
@@ -193,6 +195,52 @@ describe("cms draft actions", () => {
     });
   });
 
+  it("creates a draft album with localized fields", async () => {
+    actionMocks.getSupabaseConfig.mockReturnValue({
+      url: "https://example.supabase.co",
+      anonKey: "anon-key",
+      isConfigured: true,
+    });
+    const albumQuery = createQueryResult({
+      data: {
+        id: "album-id",
+        slug: "ceremony",
+        status: "draft",
+        sort_order: 1,
+        cover_image_id: null,
+        label_en: "Ceremony",
+        label_th: "พิธี",
+        title_en: "Ceremony",
+        title_th: "พิธี",
+        description_en: "",
+        description_th: "",
+      },
+      error: null,
+    });
+    actionMocks.createSupabaseServerClient.mockResolvedValue({
+      from: vi.fn((table: string) => {
+        if (table === "gallery_albums") return albumQuery;
+        throw new Error(`Unexpected table: ${table}`);
+      }),
+    });
+
+    await expect(
+      createGalleryAlbum({
+        slug: "ceremony",
+        labelEn: "Ceremony",
+        labelTh: "พิธี",
+        titleEn: "Ceremony",
+        titleTh: "พิธี",
+        descriptionEn: "",
+        descriptionTh: "",
+      }),
+    ).resolves.toMatchObject({ ok: true, album: { id: "album-id", slug: "ceremony", status: "draft" } });
+
+    expect(albumQuery.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ slug: "ceremony", status: "draft", sort_order: 0 }),
+    );
+  });
+
   it("returns gallery upload errors to action-state forms", async () => {
     const formData = new FormData();
     formData.set("albumId", "album-id");
@@ -364,6 +412,21 @@ describe("cms draft actions", () => {
     expect(deleteQuery.eq).toHaveBeenCalledWith("id", "image-id");
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/admin/gallery");
     expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/gallery");
+  });
+
+  it("deletes every image and storage object in an album", async () => {
+    actionMocks.getSupabaseConfig.mockReturnValue({ url: "https://example.supabase.co", anonKey: "anon-key", isConfigured: true });
+    const imagesQuery = createQueryResult({ data: [{ storage_path: "highlights/one.webp" }, { storage_path: "highlights/two.webp" }], error: null });
+    const remove = vi.fn().mockResolvedValue({ error: null });
+    actionMocks.createSupabaseServerClient.mockResolvedValue({
+      from: vi.fn(() => imagesQuery),
+      storage: { from: vi.fn(() => ({ remove })) },
+    });
+
+    await expect(deleteGalleryAlbumImages("album-id")).resolves.toEqual({ ok: true, deletedCount: 2 });
+    expect(remove).toHaveBeenCalledWith(["highlights/one.webp", "highlights/two.webp"]);
+    expect(imagesQuery.delete).toHaveBeenCalledTimes(1);
+    expect(imagesQuery.eq).toHaveBeenCalledWith("album_id", "album-id");
   });
 
   it("publishes locally when Supabase is not configured", async () => {
