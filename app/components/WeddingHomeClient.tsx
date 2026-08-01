@@ -491,6 +491,17 @@ export function WeddingHomeClient({ snapshot }: { snapshot: CmsSnapshot }) {
   }, []);
 
   useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
     if (heroImages.length < 2 || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => {
       const nextIndex = (heroCarouselIndexRef.current + 1) % heroImages.length;

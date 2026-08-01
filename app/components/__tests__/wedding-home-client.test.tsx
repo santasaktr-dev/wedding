@@ -104,6 +104,18 @@ describe("WeddingHomeClient", () => {
     expect(screen.getByTestId("header-rsvp")).toHaveClass("hidden");
   });
 
+  it("locks page scrolling while the mobile navigation is open", () => {
+    render(<WeddingHomeClient snapshot={structuredClone(fallbackCmsSnapshot) as CmsSnapshot} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
+
+    expect(document.body.style.overflow).toBe("hidden");
+
+    fireEvent.click(screen.getByRole("button", { name: "Close menu" }));
+
+    expect(document.body.style.overflow).toBe("");
+  });
+
   it("offers Thai as a non-blocking first-visit preference for Thai-language devices", () => {
     vi.spyOn(window.navigator, "language", "get").mockReturnValue("th-TH");
 
