@@ -69,14 +69,14 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
       ],
     },
     hero: {
-      coupleName: "Jajah & Smart",
+      coupleName: "JaJah & Smart",
       date: {
         en: "Sunday, 1 November 2026",
         th: "วันอาทิตย์ที่ 1 พฤศจิกายน 2569",
       },
       text: {
         en: "Together with their families request the pleasure of your company at the celebration of their wedding at Pearl Wedding Venue.",
-        th: "เรียนเชิญร่วมเป็นเกียรติในงานฉลองมงคลสมรสของ Jajah & Smart ณ Pearl Wedding Venue",
+        th: "เรียนเชิญร่วมเป็นเกียรติในงานฉลองมงคลสมรสของ JaJah & Smart ณ Pearl Wedding Venue",
       },
       imageSrc: weddingHeroImage,
       images: [weddingHeroImage],
@@ -481,7 +481,7 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
       phoneHref: "tel:+66996567965",
     },
     footer: {
-      coupleName: "Jajah & Smart",
+      coupleName: "JaJah & Smart",
       details: {
         en: "1 November 2026 · Pearl Wedding Venue",
         th: "1 พฤศจิกายน 2569 · Pearl Wedding Venue",
@@ -518,8 +518,8 @@ export const fallbackCmsSnapshot: CmsSnapshot = {
             th: "ภาพพอร์ตเทรต",
           },
           alt: {
-            en: "Prewedding portrait of Jajah and Smart",
-            th: "ภาพพรีเวดดิ้งของ Jajah และ Smart",
+            en: "Prewedding portrait of JaJah and Smart",
+            th: "ภาพพรีเวดดิ้งของ JaJah และ Smart",
           },
           sortOrder: 0,
           isCover: true,
